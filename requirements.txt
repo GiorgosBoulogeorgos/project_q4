@@ -1,0 +1,27 @@
+# ── Core numerics ─────────────────────────────────────────────────────────────
+numpy>=1.26
+scipy>=1.11
+
+# ── Structural biology / PDB parsing ──────────────────────────────────────────
+gemmi>=0.6.5
+
+# ── Data / I/O ────────────────────────────────────────────────────────────────
+pandas>=2.1
+pyarrow>=14.0        # required for pandas parquet read/write
+
+# ── Visualisation ─────────────────────────────────────────────────────────────
+matplotlib>=3.8
+seaborn>=0.13
+
+# ── Topological data analysis ─────────────────────────────────────────────────
+# gudhi: if `pip install gudhi` fails, use conda-forge instead:
+#   conda install -c conda-forge gudhi
+gudhi>=3.9
+
+# ── Download / progress ───────────────────────────────────────────────────────
+requests>=2.31
+tqdm>=4.66
+
+# ── Notebooks ─────────────────────────────────────────────────────────────────
+notebook>=7.0
+ipykernel>=6.27

@@ -1,0 +1,29 @@
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.venv/
+
+# ── Data downloads (re-run src/download.py to populate) ──────────────────────
+data/
+!data/prototypes/.gitkeep
+!data/hsapiens/.gitkeep
+
+# Proteome tarballs
+*.tar
+
+# ── Generated results ─────────────────────────────────────────────────────────
+results/proteome_stats.parquet
+results/figures/
+!results/figures/.gitkeep
+
+# ── Jupyter ───────────────────────────────────────────────────────────────────
+.ipynb_checkpoints/
+
+# ── OS ────────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
