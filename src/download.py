@@ -1,14 +1,22 @@
 """
 download.py — fetch AlphaFold-DB structures and proteome tarballs.
 
-AlphaFold-DB v4 URL patterns
------------------------------
-Single structure (PDB):
-  https://alphafold.ebi.ac.uk/files/AF-{UNIPROT_ID}-F{FRAG}-model_v4.pdb
+URL patterns (verified May 2026)
+---------------------------------
+Single structure — version discovered via the REST API (currently v6):
+  https://alphafold.ebi.ac.uk/files/AF-{UNIPROT_ID}-F{FRAG}-model_v6.pdb
 
-Full proteome tarball (EBI FTP):
-  https://ftp.ebi.ac.uk/pub/databases/alphafold/latest/
-      UP000005640_9606_HUMAN_v4.tar   (H. sapiens, ~11 GB)
+REST API (returns pdbUrl + latestVersion):
+  https://alphafold.ebi.ac.uk/api/prediction/{UNIPROT_ID}
+
+Proteome tarball (EBI FTP, database version v4; lives under /v4/ not /latest/):
+  https://ftp.ebi.ac.uk/pub/databases/alphafold/v4/UP000005640_9606_HUMAN_v4.tar
+
+Notes
+-----
+- AlphaFold-DB model file versions (v1–v6) differ from database release versions.
+- Deleted UniProt entries (e.g. A0A0G2L439) are absent from the API and
+  the individual-file endpoint but are still in frozen proteome tarballs.
 
 Usage
 -----
