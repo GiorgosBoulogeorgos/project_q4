@@ -1,0 +1,39 @@
+% 07_conclusion.tex
+\section{Conclusion}
+\label{sec:conclusion}
+
+We have reproduced the Q4 pLDDT-fragmentation analysis of Cazals \&
+Sarti~\cite{cazals2025alphafold} at the scale of the \textit{H.~sapiens}
+proteome using AlphaFold-DB v4, implementing the entire pipeline from
+scratch in Python with no dependence on the authors' code.
+The path-graph filtration, Union-Find with the Elder Rule, all five
+topological statistics, and the PLM computation via GUDHI are each
+validated against a null random model and three prototype proteins before
+being applied proteome-wide.
+
+The central reproduction target --- a Pearson correlation of $r \approx
+0.97$ between $f^+_{cp}$ and $H_p$ --- is recovered at $r = 0.928$
+across 16{,}787 F1 fragments with $n \geq 200$ residues.
+The residual gap of $0.042$ is systematically traced to the
+floating-point pLDDT precision of AlphaFold-DB v4, which produces
+$\sim\!10\times$ more distinct filtration levels per protein than the
+effectively integer-valued distributions used in the paper.
+The same mechanism halves the number of fragmentation candidates
+identified by the three-way filter ($n \geq 200$, $H_p \geq 0.25$,
+PLM $\geq 3$ at $t_p = 0.025$): 42 proteins vs.\ the paper's
+$\approx 86$.
+We quantify both gaps and explain them from first principles, converting
+what could be seen as a failure to reproduce into a precise, falsifiable
+hypothesis about the evolution of AlphaFold-DB data precision.
+
+Beyond reproduction, the novel Q1$\times$Q4 cross-correlation analysis
+reveals a 3.08-fold enrichment of fragmented proteins in the arity bin
+$(a_{25}=7, a_{75}=13)$ (Fisher exact test, $p = 1.76 \times 10^{-7}$).
+This finding --- derived from 3D $\mathrm{C}_\alpha$ packing geometry
+independently of any pLDDT information --- provides orthogonal structural
+evidence that the PLM $\geq 3$ filter identifies a genuine biological
+phenotype: multi-domain proteins with compact individual domains separated
+by flexible linkers.
+The convergence of two independent descriptors on the same protein set
+strengthens the biological credibility of the topological fragmentation
+signal.

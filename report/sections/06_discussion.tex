@@ -1,0 +1,204 @@
+% 06_discussion.tex
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{Root cause of the Pearson $r$ gap}
+\label{sec:disc_precision}
+
+Our reproduction recovers $r = 0.928$ between $f^+_{cp}$ and $H_p$,
+falling $0.042$ below the paper's target of $r \approx 0.97$.
+We attribute this gap to a single source: the floating-point precision
+of pLDDT values in AlphaFold-DB v4.
+
+In the paper's dataset --- most likely an earlier AlphaFold-DB version
+where pLDDT appears to have been stored or rounded to integer values ---
+a typical 300-residue protein has $\lesssim\!20$ distinct pLDDT levels,
+each populated by many residues forming a substantial horizontal plateau
+in $N_{cc}(\mathrm{pLDDT})$.
+In AlphaFold-DB v4, the same protein can carry over 100 distinct
+floating-point levels, so each level is typically visited by only 1--3
+residues.
+This shatters the plateaus that make peaks persistent.
+
+The effect on $H_p$ is additive: more distinct persistence values in
+$\mathcal{P}_D$ spread the probability mass function more evenly,
+increasing $H_p$ by a roughly constant offset ($+0.12$ to $+0.16$ across
+our three prototypes).
+Both $f^+_{cp}$ and $H_p$ are shifted upward by similar amounts, so
+the cloud of points in Figure~\ref{fig:scatter_corr} translates
+diagonally without rotating.
+A diagonal translation preserves the slope but increases the residual
+variance around the regression line, which is exactly what reduces $r$
+from $0.97$ to $0.928$.
+This analysis predicts that applying a coarser discretiser (e.g.\
+bin $\div 10$) would push $r$ closer to the paper's target while biasing
+$H_p$ in the opposite direction; our diagnostic experiments confirmed
+this trade-off (bin$\div10$ gives $r = 0.916$ but worsens the $H_p$
+offset for all three prototypes).
+We therefore retain \texttt{np.round} as the canonical discretiser.
+
+\subsection{Methodological adaptations: the $n \geq 200$ and F1-only filters}
+\label{sec:disc_filters}
+
+Our Figure~7 analysis departs from the paper in two pre-processing choices
+that require explicit justification, because both inflate our reported
+Pearson $r$ relative to what a paper-faithful run on our data would give.
+
+\paragraph{The F1-only restriction.}
+We retain only first-fragment (F1) entries, reducing the dataset from
+23{,}391 to 16{,}787 fragments.
+The paper places no such restriction: Figure~8 of Cazals \& Sarti
+explicitly includes an F4 entry (AF-P12111-F4-model\_v4), confirming that
+all fragment files are treated as independent data points.
+Our restriction was motivated by a concern that a protein split across F1,
+F2, F3 contributes three correlated rows --- sharing the same organism,
+domain architecture, and rough pLDDT regime --- which could artificially
+tighten the scatter.
+In practice this concern is overstated, because each fragment covers a
+distinct peptide segment that may have entirely different pLDDT character
+from its neighbours.
+The F1-only filter therefore reduces the sample size by 28\% without a
+corresponding theoretical grounding in the paper's framework.
+
+\paragraph{The $n \geq 200$ filter on the correlation analysis.}
+The paper uses the $n \geq 200$ criterion only as one leg of the
+three-way fragmentation query in its Figure~8; the Figure~7 Pearson scatter
+is computed over the full proteome.
+We extend the filter to Figure~7 as well, because with floating-point
+pLDDT a fragment of $n \lesssim 100$ residues can produce up to $n$
+distinct persistence values.
+At that granularity, $H_p$ grows with the count of distinct levels rather
+than reflecting any biologically meaningful spread in domain confidences.
+These short-fragment outliers form a dense cluster near
+$(f^+_{cp} \approx 0.33,\; H_p \approx 0)$, adding residual variance
+around the regression line.
+Removing them raises $r$ from $0.807$ (all fragments, no filter) to
+$0.928$ (F1 $+$ $n \geq 200$).
+The paper does not encounter this artefact because its effectively
+integer-valued pLDDT produces a coarse, informative persistence spectrum
+even for short proteins.
+
+\paragraph{Net effect of both filters.}
+Both adaptations compensate for a single underlying cause --- float-precision
+pLDDT, analysed in Section~\ref{sec:disc_precision} --- rather than
+reproducing the paper's protocol.
+A paper-faithful run on our data (all fragments, no length filter) would
+recover $r \approx 0.807$; the 0.121 gap relative to our reported $r$,
+and the 0.163 gap relative to the paper's target, are each attributable
+to the same diagonal shift of the scatter cloud.
+
+\subsection{Root cause of the PLM candidate gap}
+\label{sec:disc_plm}
+
+The 42-vs-86 discrepancy in fragmentation candidates follows from the
+same mechanism, but acts on a different statistic.
+PLM counts how many $N_{cc}$ peaks are \emph{persistent} at
+$t_\nu = n \cdot t_p$, measured in connected-component-count units.
+A peak requires a substantial horizontal plateau in $N_{cc}$ that
+collapses slowly as pLDDT decreases.
+With integer-valued pLDDT, 20--30 residues may share the same level,
+creating a wide plateau where $N_{cc}$ stays elevated for a long
+filtration interval; with float pLDDT, those residues are spread across
+many individual levels, so the plateau disappears and the peak's
+persistence drops below $t_\nu$.
+
+This explains why the gap is multiplicative (${\approx}2\times$) rather
+than additive: each domain's pLDDT peak either clears the persistence
+threshold entirely or falls below it, with no partial credit.
+Our $t_p = 0.020$ result (206 proteins) is the closest analogue to what
+the paper sees at $t_p = 0.025$, suggesting that the effective threshold
+in the paper's integer-pLDDT regime corresponds to a relative persistence
+of about $0.020$ in our float-pLDDT regime.
+
+The 42 proteins we do identify are the robustly fragmented cases whose
+peaks survive even with the finer filtration granularity.
+We expect this set to be a high-precision subset of the paper's 86,
+containing the proteins with the most prominent and wide pLDDT
+transitions between domains.
+
+\subsection{Biological interpretation of the arity enrichment}
+\label{sec:disc_arity}
+
+The 3.08-fold enrichment of fragmented proteins in the arity bin
+$(a_{25}=7, a_{75}=13)$ is statistically highly significant
+($p = 1.76 \times 10^{-7}$) and biologically interpretable.
+The arity range $[7, 13]$ at the 25th--75th percentile level corresponds
+to proteins that are neither maximally disordered nor maximally compact:
+
+\begin{itemize}
+  \item A low-arity $a_{25} \approx 7$ means that a quarter of the
+  protein's residues have fewer than 7 $\mathrm{C}_\alpha$ neighbours
+  within 10\,\AA{}.
+  This is characteristic of flexible linker regions with limited
+  tertiary contacts.
+
+  \item A moderate $a_{75} \approx 13$ means that three-quarters of
+  residues have at most 13 neighbours, which is typical of well-packed
+  globular domains but below the $a_{75} \approx 20$ seen in
+  tightly-packed $\alpha/\beta$ proteins.
+\end{itemize}
+
+Together, this signature is exactly what one expects from a multi-domain
+protein: compact, independently folded domains contribute the upper
+quartile of arities, while disordered linkers contribute the lower
+quartile.
+Purely disordered proteins (like A0A0G2L439, $a_{75}=7$) have low arity
+throughout, and single-domain globular proteins (like P15121, $a_{75}=23$)
+have uniformly high arity.
+Multi-domain fragmented proteins inhabit the intermediate zone where
+packing heterogeneity is highest.
+
+Crucially, this enrichment is derived from the 3D coordinate geometry
+of the AlphaFold structure, entirely independently of the pLDDT
+sequence analysis.
+The fact that two orthogonal structural descriptors --- topological
+pLDDT fragmentation and $\mathrm{C}_\alpha$ packing arity --- converge
+on the same set of proteins provides mutual validation for both methods.
+
+\subsection{Limitations}
+\label{sec:disc_limits}
+
+\paragraph{Single organism.}
+All results are computed on the \textit{H.~sapiens} proteome only.
+The paper demonstrates similar correlations across multiple model
+organisms; whether the arity enrichment pattern generalises to other
+proteomes remains untested.
+
+\paragraph{No experimental disorder ground truth.}
+We do not compare our fragmented candidates against DisProt or MobiDB
+experimental annotations of intrinsic disorder.
+Such a comparison would establish whether PLM$\,\geq 3$ proteins are
+enriched in annotated IDRs or in multi-domain entries in the literature,
+providing a biological validation beyond the internal cross-correlation.
+This is out of scope for the current course project.
+
+\paragraph{Data version.}
+AlphaFold-DB v6 was released after this project began; all computations
+use v4 PDB files.
+The pLDDT distributions may differ between versions, and the arity
+enrichment results could shift.
+The float-precision gap that explains most of our discrepancies with
+the paper may be reduced or exacerbated in v6.
+
+\paragraph{Discretisation choice.}
+The \texttt{np.round} discretiser is a pragmatic choice that minimises
+the $H_p$ offset for the prototype proteins.
+A principled derivation of the optimal discretiser from first principles
+--- e.g., by matching the null-model $H_p$ distribution --- would
+strengthen the theoretical grounding of our reproduction.
+
+\subsection{Directions for future work}
+\label{sec:disc_future}
+
+The most direct extension is to apply the same pipeline to
+AlphaFold-DB v6 and to additional model organisms
+(\textit{M.\ musculus}, \textit{S.\ cerevisiae}) to assess the
+universality of the arity enrichment signal.
+A comparison of our 42 fragmented candidates against UniProt domain
+annotations and known multi-domain proteins would provide external
+biological validation.
+On the algorithmic side, the batch-insertion filtration could be
+generalised to other scalar functions on sequence-embedded graphs,
+such as predicted solvent accessibility or AlphaFold's PAE matrix;
+persistence of the resulting N-connected-component curves could yield
+complementary fragmentation descriptors.

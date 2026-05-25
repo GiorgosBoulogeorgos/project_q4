@@ -1,0 +1,125 @@
+% 02_background.tex
+\section{Background}
+\label{sec:background}
+
+\subsection{Path graphs and scalar filtrations}
+
+Let $G_n = (V, E)$ denote the \emph{path graph} on $n$ vertices, where
+$V = \{1,\ldots,n\}$ represents the residues of a polypeptide chain and
+$E = \{(i,\,i{+}1) : i = 1,\ldots,n{-}1\}$ the peptide bonds.
+A \emph{scalar filtration} of $G_n$ assigns a real value $u_i$ to each
+vertex and grows a sequence of nested subgraphs
+$\emptyset = \mathcal{G}_{-\infty} \subseteq \mathcal{G}_{u_{(1)}} \subseteq
+\cdots \subseteq \mathcal{G}_{u_{(n)}} = G_n$
+by adding vertices in increasing $u$ order together with all incident
+edges whose other endpoint is already present~\cite{edelsbrunner2010computational}.
+
+Following~\cite{cazals2025alphafold}, we set $u_i = -s_i$ where $s_i \in [0,100]$
+is the pLDDT score of residue $i$.
+Processing by increasing $u$ therefore inserts residues in
+\emph{decreasing pLDDT order}: high-confidence residues enter first.
+An edge $(i,i{+}1)$ is activated as soon as both its endpoints have been
+inserted.
+We denote this filtration $\mathcal{G}_{\mathrm{pLDDT}}$.
+
+\subsection{Connected components and the Elder Rule}
+
+Let $N_{cc}(u)$ count the connected components of $\mathcal{G}_u$ at
+parameter $u$.
+Initially $N_{cc} = 0$; each vertex insertion increments it by 1 (a new
+singleton component is born), and each edge activation that joins two distinct
+components decrements it by 1 (one component dies by merging into the other).
+
+The \textbf{Elder Rule} determines which component survives a merge:
+the component with the \emph{lower} $u$-value at birth (equivalently, born at
+\emph{higher} pLDDT) is the elder and persists; the younger component dies,
+recording a \emph{persistence pair} $(b, d)$ where $b = \mathrm{birth\_pLDDT}$
+of the younger component and $d = \mathrm{death\_pLDDT}$ (the pLDDT level at
+which the merge occurs).
+Persistence in pLDDT units is $p = b - d \geq 0$.
+
+The collection of all $n{-}1$ persistence pairs constitutes the
+\textbf{persistence diagram} (PD)
+$\mathcal{P} = \{(b_i, d_i)\}_{i=1}^{n-1}$~\cite{edelsbrunner2010computational}.
+Pairs with $b_i = d_i$ (zero persistence) are called \emph{accretions}:
+they occur when two components that were already in the same root's tree
+merge, or when a batch of residues at identical pLDDT level are inserted
+simultaneously and their internal edges are activated at birth level $L$
+(so birth equals death equals $L$).
+
+\subsection{Five statistics}
+\label{sec:bg_stats}
+
+We reproduce Definition~1 of~\cite{cazals2025alphafold}.
+Let $m = n{-}1$ be the total number of PD pairs, $m'$ the number of pairs
+with $b_i > d_i$ (strictly positive persistence), and
+$\mathcal{P}_D$ the set of \emph{distinct} persistence values
+$\{p_i = b_i - d_i\}$.
+Write $\mathbb{P}[v] = \#\{i : p_i = v\}/m$ for the empirical probability of
+value $v$.
+
+\begin{enumerate}
+  \item \textbf{Fraction of positive critical points}:
+        $f^+_{cp} = m'/(n{-}1)$.
+        High values indicate a heterogeneous pLDDT profile along the sequence.
+
+  \item \textbf{Mean persistence}:
+        $\bar{p} = \frac{1}{m}\sum_{i=1}^{m}(b_i - d_i)$.
+
+  \item \textbf{Normalised persistence entropy}:
+        \begin{equation}
+          H_p = -\sum_{v \in \mathcal{P}_D} \mathbb{P}[v]\,\log\mathbb{P}[v]
+                \;\Big/\;\log|\mathcal{P}_D|.
+          \label{eq:Hp}
+        \end{equation}
+        $H_p \in [0,1]$; it equals $0$ when all pairs share a single
+        persistence value and $1$ when all values are equally probable.
+        Ordered proteins with narrow pLDDT distributions yield low $H_p$;
+        multi-domain proteins with wide distributions yield high $H_p$.
+
+  \item \textbf{Peak connected-component count}:
+        $N_{cc}^{max} = \max_u N_{cc}(u)$.
+        For random pLDDT the expected peak is $\approx n/4$~\cite{cazals2025alphafold}.
+
+  \item \textbf{Persistent local maxima}:
+        $\mathrm{PLM}(t_p)$ counts local maxima of $N_{cc}(u)$ whose
+        persistence under the super-level-set filtration of $N_{cc}$
+        (viewed as a 1D scalar function of the filtration index) exceeds
+        the absolute threshold $t_\nu = n \cdot t_p$.
+        A high PLM count is the topological signature of multi-domain
+        proteins, where each structural domain produces a distinct
+        connected-component peak.
+\end{enumerate}
+
+$f^+_{cp}$ and $H_p$ are strongly linearly correlated across any proteome
+(Pearson $r \approx 0.97$ in~\cite{cazals2025alphafold}), providing a
+cross-check on both statistics.
+
+\subsection{Arity signature}
+\label{sec:bg_arity}
+
+The \emph{arity} of residue $k$ is the number of $\mathrm{C}_\alpha$ atoms
+within a Euclidean distance $r = 10$\,\AA{} of $\mathrm{C}_\alpha(k)$,
+excluding residue $k$ itself~\cite{cazals2025alphafold}.
+This radius accounts for non-covalent contacts and has been shown sufficient
+to infer protein domains via spectral clustering.
+
+\begin{definition}[Arity signature {\cite[Def.\,2]{cazals2025alphafold}}]
+\label{def:arity_sig}
+Let $L_a = (a_1,\ldots,a_n)$ be the per-residue arity values.
+Given quantiles $q_1 = 0.25$ and $q_2 = 0.75$, the \emph{arity signature}
+of a protein $P$ is the pair
+\[
+  \mathrm{Sig}(P) = (a_{25},\;a_{75})
+  \quad\text{where}\quad
+  a_k = \mathrm{CDF}_{L_a}^{-1}(q_k).
+\]
+\end{definition}
+
+The \emph{arity map} (Definition~3 of~\cite{cazals2025alphafold}) is a
+2D histogram of all proteome proteins in the $(a_{25}, a_{75})$ plane.
+Compactly folded multi-domain proteins cluster in high-arity bins
+($a_{25} \geq 7$, $a_{75} \geq 13$); intrinsically disordered proteins
+occupy low-arity bins ($a_{25} \leq 4$).
+Intuitively, the arity signature compresses the full $\mathrm{C}_\alpha$
+packing-density distribution into two robust quantile descriptors.

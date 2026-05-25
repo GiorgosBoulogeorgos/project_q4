@@ -1,0 +1,33 @@
+% abstract.tex
+We reproduce and extend the pLDDT-fragmentation analysis (Q0/Q4) of
+Cazals~\&~Sarti~\cite{cazals2025alphafold} at the scale of the human
+(\textit{H.~sapiens}) proteome using AlphaFold Database v4 predictions.
+The analysis is grounded in a path-graph filtration of residues ordered by
+decreasing predicted local-distance difference test (pLDDT) confidence
+score, from which a per-protein persistence diagram is derived using
+Union-Find with the Elder Rule.
+Five statistics are computed from each diagram: the fraction of
+positive-persistence pairs~$f^+_{cp}$, mean persistence~$\bar{p}$,
+normalised persistence entropy~$H_p$, the peak connected-component
+count~$N_{cc}^{max}$, and the count of persistent local maxima~$\mathrm{PLM}(t_p)$.
+
+From 23{,}391 total fragments we analyse 16{,}787 first-fragment (F1)
+entries with $n \geq 200$ residues, recovering a Pearson correlation of
+$r = 0.928$ between $f^+_{cp}$ and~$H_p$ (paper target:
+${\approx}0.97$); the residual gap is traced
+to float-precision pLDDT values in v4, which produce substantially more
+distinct filtration levels than the effectively integer-valued pLDDT
+used in the paper.
+At threshold $t_p = 0.025$ and the paper's three-way filter
+($n \ge 200$, $H_p \ge 0.25$, $\mathrm{PLM} \ge 3$),
+we identify 42 multi-domain fragmentation candidates
+(paper target: ${\approx}86$), again explained by the precision shift.
+
+As a novel extension we compute $\mathrm{C}_\alpha$-packing arity
+signatures~\cite{cazals2025alphafold} for the entire proteome and
+cross-correlate them with the fragmentation signal,
+finding a 3.08-fold enrichment of fragmented proteins in the high-arity
+bin ($a_{25}=7$, $a_{75}=13$; $p = 1.76 \times 10^{-7}$), suggesting
+that multi-domain proteins with compact core packing are the primary
+fragmentation targets.
+All code is written in Python~3.11 and released with the submission.

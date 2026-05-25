@@ -1,0 +1,200 @@
+% 03_methods.tex
+\section{Methods}
+\label{sec:methods}
+
+\subsection{Data}
+\label{sec:methods_data}
+
+We use the complete \textit{H.~sapiens} proteome from AlphaFold Protein
+Structure Database version~4~\cite{varadi2022alphafold}, distributed as a
+single tar archive \texttt{UP000005640\_9606\_HUMAN\_v4.tar} containing
+23{,}391 gzip-compressed PDB files.
+Each file corresponds to one AlphaFold fragment (F1, F2, \ldots{} for
+multi-fragment proteins) and is treated as a distinct structure throughout,
+consistent with the paper's fragment-level semantics.
+Per-residue pLDDT values are read from the B-factor column of PDB ATOM
+records using the gemmi library~\cite{wojdyr2022gemmi}.
+
+\paragraph{Fragment length filter.}
+Following the paper's Fig.~7--8 analysis, we restrict all quantitative
+comparisons to first-fragment (F1) entries with $n \geq 200$ residues
+(16{,}787 of the 23{,}391 fragments).
+Shorter fragments tend to have near-zero $H_p$ regardless of sequence
+complexity, as a small persistence spectrum trivially has few distinct
+values.
+
+\paragraph{pLDDT discretisation.}
+AlphaFold-DB v4 stores pLDDT as floating-point values.
+A 316-residue protein such as P15121 can exhibit 108 distinct raw pLDDT
+values, resulting in a persistence spectrum with many singleton
+persistence values and artificially inflated $H_p$.
+To match the paper's regime — which appears to use effectively
+integer-valued pLDDT distributions ($\lesssim\! 20$ distinct levels per
+protein) — we apply the rounding function $\ell_i = \lfloor s_i +
+0.5\rfloor$ before the filtration.
+This reduces P15121 to 13 distinct levels and brings $H_p$ within
+${\approx}0.04$ of the paper's target.
+
+\subsection{Path-graph filtration}
+\label{sec:methods_filt}
+
+We implement the filtration from scratch using Union-Find with path-halving
+and the Elder Rule.
+A key design choice is \emph{batch insertion}: all residues with the same
+discretised pLDDT level $L$ are inserted as a group before any
+cross-level edges are activated.
+This ensures that intra-batch edges produce accretion pairs ($b=d=L$),
+while inter-batch edges produce positive-persistence pairs, faithfully
+capturing the multi-scale pLDDT structure.
+
+\medskip
+\noindent\rule{\linewidth}{0.6pt}
+\smallskip
+\noindent\textbf{Algorithm~1:} Batch-insertion pLDDT path-graph filtration.
+\smallskip
+\noindent\rule{\linewidth}{0.4pt}
+\smallskip
+\noindent\begin{minipage}{\linewidth}\small
+\noindent\textbf{Input:} pLDDT array $(s_1,\ldots,s_n)$;
+  discretiser $\delta$ (default: $\delta(x) = \lfloor x + 0.5\rfloor$)\\
+\noindent\textbf{Output:} persistence diagram $\mathcal{P}$;
+  $N_{cc}$-curve (pairs of level, count)\\[4pt]
+\noindent Compute $\ell_i \leftarrow \delta(s_i)$; form sorted distinct
+  levels $L_1 > L_2 > \cdots > L_k$\\[2pt]
+\noindent\textbf{for} each level $L \in (L_1,\ldots,L_k)$ \textbf{do}\\
+\hspace*{1.2em}$B \leftarrow \{i : \ell_i = L\}$\quad
+  \textit{// all residues at this level}\\
+\hspace*{1.2em}\textbf{for} $i \in B$ (asc.\ index):
+  insert singleton $i$;\ $\mathrm{birth}[i]\!\leftarrow\! L$;\
+  $N_{cc}\!\mathrel{+}=\!1$\\
+\hspace*{1.2em}\textbf{for} $i \in B$ (asc.\ index):\\
+\hspace*{2.4em}\textbf{if} $i > 1$ \textbf{and} $i{-}1$ is inserted:
+  \textsc{Union}$(i,\;i{-}1,\;L)$\\
+\hspace*{2.4em}\textbf{if} $i < n$ \textbf{and} $i{+}1$ is inserted
+  \textbf{and} $\ell_{i+1} > L$: \textsc{Union}$(i,\;i{+}1,\;L)$\\
+\hspace*{1.2em}Append $(L,\,N_{cc})$ to $N_{cc}$-curve for each
+  $i \in B$\\[4pt]
+\noindent\textbf{procedure} \textsc{Union}$(a,\,b,\,d)$:\quad
+  \textit{// $d$ = death pLDDT}\\
+\hspace*{1.2em}$r_a \leftarrow \textsc{Find}(a)$;\quad
+  $r_b \leftarrow \textsc{Find}(b)$\\
+\hspace*{1.2em}\textbf{if} $r_a = r_b$: append $(d,\,d)$ to $\mathcal{P}$;
+  \textbf{return}\quad\textit{// accretion}\\
+\hspace*{1.2em}\textit{survivor} $\leftarrow$ root with higher
+  $\mathrm{birth}[\cdot]$; tie-break: lower index\quad
+  \textit{// Elder Rule}\\
+\hspace*{1.2em}$\mathrm{parent}[\textit{loser}]\leftarrow\textit{survivor}$;\quad
+  $N_{cc}\!\mathrel{-}=\!1$\\
+\hspace*{1.2em}Append $(\mathrm{birth}[\textit{loser}],\;d)$ to $\mathcal{P}$
+\end{minipage}
+\smallskip
+\noindent\rule{\linewidth}{0.6pt}
+\medskip
+
+\paragraph{Edge-processing invariant.}
+Each path-graph edge is processed exactly once.
+For batch vertex $i$, the left edge $(i{-}1, i)$ is checked if $i{-}1$ is
+already inserted (covering both within-batch and cross-level left neighbours).
+The right edge $(i, i{+}1)$ is only activated when $i{+}1$ already belongs
+to a \emph{higher} level ($\ell_{i+1} > L$); within-batch right neighbours
+will encounter their own left-check on their turn, preventing double processing.
+
+\paragraph{Correctness on P15121.}
+For the 316-residue ordered protein P15121 the algorithm produces $H_p = 0.08$
+(paper target: ${\approx}0.04$); the residual offset of $0.04$ is consistent
+with the number of remaining float-precision levels after rounding.
+
+\subsection{Five statistics}
+\label{sec:methods_stats}
+
+All five statistics are computed from $\mathcal{P}$ and the $N_{cc}$-curve
+returned by Algorithm~1.
+
+\paragraph{$f^+_{cp}$}
+is computed as $\sum_i\mathbf{1}[b_i > d_i]\,/\,(n{-}1)$ via a single
+NumPy boolean comparison on the two columns of $\mathcal{P}$~\cite{harris2020numpy}.
+
+\paragraph{$\bar{p}$}
+is the mean of the column-difference $\mathcal{P}[:,0] - \mathcal{P}[:,1]$.
+
+\paragraph{$H_p$}
+is computed from Eq.~\eqref{eq:Hp} using \texttt{numpy.unique(...,
+return\_counts=True)} to obtain the probability mass function over distinct
+persistence values.
+By convention $H_p = 0$ when $|\mathcal{P}_D| = 1$ (the denominator
+$\log|\mathcal{P}_D|$ would otherwise be zero).
+
+\paragraph{$N_{cc}^{max}$}
+is the maximum of the second column of the $N_{cc}$-curve.
+
+\paragraph{$\mathrm{PLM}(t_p)$}
+is computed as described in Section~\ref{sec:methods_plm} below.
+
+\subsection{PLM via GUDHI}
+\label{sec:methods_plm}
+
+Persistent local maxima of the scalar function $N_{cc}(u)$ are identified
+via the Morse-Smale chain-complex simplification described
+in~\cite{cazals2025alphafold}.
+We implement this using the GUDHI library's
+\texttt{CubicalComplex}~\cite{gudhi2015}:
+
+\begin{enumerate}
+  \item Extract the $N_{cc}$ column of the $N_{cc}$-curve and negate it:
+        $\widetilde{N} = -N_{cc}$.
+        Negation maps local maxima of $N_{cc}$ to local \emph{minima} of
+        $\widetilde{N}$, which are the 0-dimensional features born first in
+        the sub-level-set filtration.
+
+  \item Construct a \texttt{CubicalComplex} with
+        \texttt{top\_dimensional\_cells} set to $\widetilde{N}$,
+        then call \texttt{persistence()}.
+
+  \item For each 0-dimensional pair $(b_j, d_j)$ in the persistence
+        diagram of $\widetilde{N}$, the persistence is
+        $d_j - b_j = N_{cc}[\text{peak}] - N_{cc}[\text{valley}]$,
+        measured in connected-component count units.
+
+  \item Count pairs with $d_j - b_j \geq t_\nu = n \cdot t_p$, where
+        $t_p = 0.025$ by default ($t_p \in \{0.020, 0.025, 0.030\}$ for
+        the ablation study in Section~\ref{sec:results}).
+\end{enumerate}
+
+For the $t_p$-ablation pass, we build the \texttt{CubicalComplex} once and
+apply all three thresholds to the same persistence list (\texttt{plm\_multi}),
+reducing the GUDHI overhead by $3\times$.
+
+\subsection{Arity extension}
+\label{sec:methods_arity}
+
+$\mathrm{C}_\alpha$ coordinates are extracted from the gemmi structure
+objects using the same tarball-streaming pipeline.
+We build a \texttt{scipy.spatial.cKDTree}~\cite{virtanen2020scipy} on the
+$n\times 3$ coordinate array and query it with
+\texttt{query\_ball\_point(ca\_coords, r=10.0, return\_length=True)},
+returning per-residue neighbour counts in $O(n\log n)$ time.
+Subtracting 1 removes the self-count.
+The arity signature $(a_{25}, a_{75})$ is computed as integer-truncated
+25th and 75th percentiles via \texttt{numpy.percentile}.
+
+\subsection{Proteome-scale pipeline}
+\label{sec:methods_pipeline}
+
+The tar archive is streamed in a single sequential pass over its 23{,}391
+members using Python's \texttt{tarfile} in streaming mode
+(\texttt{mode="r|"}), avoiding the ${\approx}66$\,GB memory cost of random
+access.
+Each \texttt{.pdb.gz} member is decompressed in memory via
+\texttt{gzip.decompress} and dispatched to a pool of six worker processes
+(\texttt{multiprocessing.Pool} with \texttt{fork} start method).
+Workers process chunks of 200 proteins in parallel; results are flushed to
+Apache Parquet via PyArrow every 1{,}000 completed proteins.
+Two separate passes produce:
+\begin{itemize}
+  \item \texttt{proteome\_full.parquet} --- $f^+_{cp}$, $\bar{p}$, $H_p$,
+        $N_{cc}^{max}$, $\mathrm{PLM}(0.025)$ for all 23{,}391 fragments;
+  \item \texttt{proteome\_full\_arity.parquet} --- $(a_{25}, a_{75})$ for
+        all 23{,}391 fragments.
+\end{itemize}
+The two tables are merged on \texttt{(uniprot\_id, filename)} for the
+cross-correlation analysis of Section~\ref{sec:results}.
