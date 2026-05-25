@@ -2,8 +2,75 @@
 \section{Validation}
 \label{sec:validation}
 
-We validate our implementation against two reference points: a null random
-model and the three prototype proteins singled out in Figure~3 of~\cite{cazals2025alphafold}.
+We validate our implementation against three reference points: a
+hand-computed toy protein (formula audit), the null random model (Example~1
+of the paper), and the three prototype proteins singled out in Figure~3
+of~\cite{cazals2025alphafold}.
+
+\subsection{Formula audit on a toy protein}
+\label{sec:validation_toy}
+
+Before running the pipeline on real data we verify the $H_p$ and $f^+_{cp}$
+formulae against a hand-computable example.
+
+\paragraph{Toy construction.}
+Consider a chain of $n = 5$ residues with pLDDT values
+$s = [10,\;90,\;80,\;90,\;10]$ (indices $0$--$4$).
+After integer rounding the distinct levels are $\{10, 80, 90\}$.
+Batch insertion processes them in decreasing order.
+
+\emph{Level 90 (residues 1 and 3).}
+Both residues are inserted as isolated components ($N_{cc} = 2$).
+Their only present neighbours at this level are each other if they were
+adjacent, but residues 1 and 3 are separated by residue 2 (not yet inserted),
+so no edges are activated.
+
+\emph{Level 80 (residue 2).}
+Residue 2 is inserted between the two level-90 components.
+Left cross-level edge $(2,1)$: component $\{2\}$ (born at 80) merges into
+$\{1\}$ (born at 90); the younger component dies, producing the pair
+$(80, 80)$ — an \emph{accretion} (birth $=$ death).
+Right cross-level edge $(2,3)$: $\{1,2\}$ (root born at 90) merges with
+$\{3\}$ (born at 90); tie is broken by index, producing the pair $(90, 80)$
+— a \emph{positive} persistence point with $p = 10$.
+$N_{cc}$ drops to 1.
+
+\emph{Level 10 (residues 0 and 4).}
+Each is inserted as an isolated singleton then merged into the single
+remaining component via a cross-level edge, yielding two more accretion
+pairs $(10, 10)$.
+
+\paragraph{Resulting persistence diagram.}
+\[
+  \mathcal{P}_D = \{(80,80),\;(90,80),\;(10,10),\;(10,10)\},
+  \quad m = 4 = n-1.\checkmark
+\]
+
+\paragraph{Hand-computed statistics.}
+Persistence values: $\{0, 10, 0, 0\}$, so $\mathcal{P} = \{0, 10\}$
+and $|\mathcal{P}| = 2$.
+The probability mass function is $\mathbb{P}[0] = 3/4$,
+$\mathbb{P}[10] = 1/4$.
+\begin{align*}
+  H_p &= \frac{-\!\left(\tfrac{3}{4}\ln\tfrac{3}{4} +
+                         \tfrac{1}{4}\ln\tfrac{1}{4}\right)}{\ln 2}
+       = \frac{0.5623}{0.6931} = 0.8112, \\
+  f^+_{cp} &= \tfrac{1}{4} = 0.25
+\end{align*}
+Our implementation returns $H_p = 0.8113$ and $f^+_{cp} = 0.25$
+(to four decimal places), confirming exact agreement with the hand
+derivation.
+
+\paragraph{Note on the $f^+_{cp}$ denominator.}
+Both paper versions write $f^+_{cp} = m'/n$ in their main definition
+but $f^+_{cp} = m'/(n-1)$ in the pLDDT-specific section, where $m'$
+is the count of positive-persistence pairs and $n$ the chain length.
+The two expressions differ by $m'/(n(n-1))$, which is at most $0.004$
+for $n = 100$ and falls below $0.001$ for all proteins with $n \geq 200$.
+We adopt the $m'/(n-1)$ convention, which equals the fraction of
+positive-persistence PD pairs out of the total $m = n-1$ pairs and
+matches the pLDDT-section statement in both versions of the paper.
+The choice has no measurable effect on any reported result.
 
 \subsection{Null random model}
 
@@ -55,10 +122,12 @@ Q9VQS4     & Mixed      & 781 & 0.297 & 0.425 & 78  & $+0.15$\\
 The relative ordering of $H_p$ is preserved: ordered $<$ disordered
 $\approx$ mixed, matching the paper's qualitative classification.
 The absolute offset of $\Delta H_p \approx +0.12$--$+0.16$ is consistent
-across all three proteins and is caused by the float-precision pLDDT
-values in AlphaFold-DB v4, which produce more distinct persistence values
-than the effectively integer-valued distributions in the paper's dataset
-(Section~\ref{sec:methods_data}).
+across all three proteins.
+Its origin is discussed in Section~\ref{sec:disc_precision} and
+Section~\ref{sec:disc_filters}; in short, AlphaFold-DB v4 stores pLDDT
+at two-decimal-place float precision, yielding more distinct persistence
+values per protein than appear to be present in the paper's data, though
+the exact processing details of the paper's pipeline are not documented.
 
 Figure~\ref{fig:ncc_protos} shows the $N_{cc}(\mathrm{pLDDT})$ curves for
 the three prototypes.
