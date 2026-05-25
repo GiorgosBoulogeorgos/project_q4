@@ -1,20 +1,78 @@
-\documentclass[11pt]{article}
-\usepackage{amsmath,amssymb}
+\documentclass[conference]{IEEEtran}
+
+% ── Encoding & fonts ───────────────────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+% IEEEtran defaults to Courier for \texttt{}; use CM typewriter instead
+% (Courier .tfm not present in basic TeX Live 2026).
+\renewcommand{\ttdefault}{cmtt}
+
+% ── Mathematics ───────────────────────────────────────────────────────────────
+\usepackage{amsmath,amssymb,amsthm}
+
+% ── Graphics & colour ─────────────────────────────────────────────────────────
 \usepackage{graphicx}
-\usepackage{hyperref}
+\usepackage{xcolor}
+
+% ── Tables ────────────────────────────────────────────────────────────────────
 \usepackage{booktabs}
-\usepackage[margin=2.5cm]{geometry}
+
+% ── Hyperlinks (load last, after most packages) ───────────────────────────────
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks = true,
+  linkcolor  = blue!70!black,
+  citecolor  = green!50!black,
+  urlcolor   = blue!70!black,
+}
+
+% ── Miscellaneous ─────────────────────────────────────────────────────────────
+\usepackage{microtype}
+
+% ── Graphics path ─────────────────────────────────────────────────────────────
+\graphicspath{{figures/}{../data/results/}}
+
+% ── Theorem environments ───────────────────────────────────────────────────────
+\newtheorem{definition}{Definition}
+
+
+% ══════════════════════════════════════════════════════════════════════════════
+\begin{document}
 
 \title{Q4 -- pLDDT Values and Fragmentation of AlphaFold Reconstructions\\
-       at the Scale of the H.\,sapiens Proteome}
-\author{}
-\date{}
+       at the Scale of the \textit{H.~sapiens} Proteome:\\
+       Reproduction and Arity Cross-Correlation Extension}
 
-\begin{document}
+\author{%
+  \IEEEauthorblockN{Giorgos Boulogeorgos}\\
+  \IEEEauthorblockA{%
+    Course: Algorithms in Structural Bioinformatics\\
+    Academic Year 2025--2026}
+}
+
 \maketitle
 
-% Placeholder -- report body written in Week 3, Days 15--17.
+% ── Abstract ──────────────────────────────────────────────────────────────────
+\begin{abstract}
+{\mdseries\input{sections/abstract}}
+\end{abstract}
 
+% ── Keywords ──────────────────────────────────────────────────────────────────
+\begin{IEEEkeywords}
+AlphaFold, pLDDT, topological data analysis, persistence diagram,
+intrinsically disordered proteins, arity, \textit{H.~sapiens} proteome
+\end{IEEEkeywords}
+
+% ── Sections ──────────────────────────────────────────────────────────────────
+\input{sections/01_introduction}
+\input{sections/02_background}
+\input{sections/03_methods}
+\input{sections/04_validation}
+\input{sections/05_results}
+\input{sections/06_discussion}
+\input{sections/07_conclusion}
+
+% ── Bibliography ──────────────────────────────────────────────────────────────
 \bibliographystyle{ieeetr}
 \bibliography{refs}
+
 \end{document}

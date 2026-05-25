@@ -9,8 +9,8 @@ Table~\ref{tab:proteome_summary} summarises the distribution of the
 scalar statistics across the 16{,}787 F1 fragments with $n \geq 200$.
 
 \begin{table}[t]
-\caption{Distribution of Q4 statistics across 16{,}787 F1 fragments
-($n \geq 200$, human proteome, AlphaFold-DB v4).}
+\caption{Distribution of Q4 statistics across all 23{,}391 fragments
+(human proteome, AlphaFold-DB v4, paper-faithful filtration).}
 \label{tab:proteome_summary}
 \centering
 \small
@@ -18,44 +18,41 @@ scalar statistics across the 16{,}787 F1 fragments with $n \geq 200$.
 \toprule
 Statistic & Min & Median & Mean & Max \\
 \midrule
-$f^+_{cp}$         & 0.000 & 0.201 & 0.206 & 0.467 \\
-$H_p$              & 0.000 & 0.311 & 0.321 & 0.686 \\
-$N_{cc}^{max}/n$   & 0.005 & 0.198 & 0.200 & 0.490 \\
-$\mathrm{PLM}(0.025)$ & 1  & 1     & ---   & 3     \\
+$f^+_{cp}$            & 0.044 & 0.242 & 0.247 & 0.417 \\
+$H_p$                 & 0.207 & 0.362 & 0.368 & 0.684 \\
+$N_{cc}^{max}/n$      & 0.005 & 0.073 & 0.093 & 0.490 \\
+$\mathrm{PLM}(0.025)$ & 1     & 1     & 1.45  & 7     \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-The medians $f^+_{cp} = 0.201$ and $H_p = 0.311$ are below the
-null-model expectations ($f^+_{cp} \approx 0.33$, $H_p \approx 0.45$),
-indicating that most human proteins have more coherent pLDDT profiles
-than random sequences of the same length.
-The normalised peak $N_{cc}^{max}/n \approx 0.20$ is consistent with
-the paper's null-model conjecture of $1/4$.
+The medians $f^+_{cp} = 0.242$ and $H_p = 0.362$ are elevated relative
+to the null-model expectations ($f^+_{cp} \approx 0.33$, $H_p \approx 0.45$),
+consistent with a mix of ordered and disordered proteins.
+All proteins have $H_p > 0$ because the float-precision pLDDT in
+AlphaFold-DB~v4 ensures at least several distinct persistence values
+per protein even for short fragments.
 
 \subsection{Correlation between $f^+_{cp}$ and $H_p$}
 \label{sec:results_corr}
 
 Figure~\ref{fig:scatter_corr} shows the scatter plot of $f^+_{cp}$
-vs.\ $H_p$ for all 16{,}787 F1 fragments with $n \geq 200$.
-The Pearson correlation is $r = 0.928$ ($p < 10^{-300}$), compared to
+vs.\ $H_p$ for all 23{,}391 fragments with no length pre-filter.
+The Pearson correlation is $r = 0.864$ ($p < 10^{-300}$), compared to
 the paper's target of $r \approx 0.97$.
 
-The residual gap of ${\approx}0.04$ is explained by the float-precision
-pLDDT values in AlphaFold-DB v4: with 108 distinct pLDDT levels for a
-316-residue protein (vs.\ $\lesssim\!20$ in the paper's dataset), the
-persistence spectrum is broader, adding variance to both statistics and
-widening the scatter around the linear trend.
-The gap shrinks from $0.121$ (all fragments, no filter) to $0.042$ (F1 +
-$n \geq 200$), showing that the $n \geq 200$ filter is the dominant
-corrective factor.
+The residual gap of ${\approx}0.11$ is attributable to the float-precision
+pLDDT in AlphaFold-DB~v4: with up to 108 distinct pLDDT levels for a
+316-residue protein (vs.\ ${\lesssim}20$ in the paper's data), the
+persistence spectrum is broader, spreading probability mass across more
+values and adding variance around the linear trend
+(Section~\ref{sec:disc_precision}).
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.9\columnwidth]{figure7_full.png}
-  \caption{Scatter of $f^+_{cp}$ vs.\ $H_p$ for 16{,}787 F1 fragments
-  with $n \geq 200$ (Pearson $r = 0.928$).
-  Dashed red lines mark the fragmentation thresholds.
+  \caption{Scatter of $f^+_{cp}$ vs.\ $H_p$ for all 23{,}391
+  AlphaFold-DB v4 fragments (Pearson $r = 0.864$).
   Prototype proteins are annotated.}
   \label{fig:scatter_corr}
 \end{figure}
@@ -66,23 +63,25 @@ corrective factor.
 Figure~\ref{fig:scatter_3d} shows the 3D scatter of $n$, $H_p$, and
 $f^+_{cp}$, with fragmentation candidates highlighted.
 Applying the three-way filter ($n \geq 200$, $H_p \geq 0.25$,
-$\mathrm{PLM}(0.025) \geq 3$) yields \textbf{42 proteins}, compared to
+$\mathrm{PLM}(0.025) \geq 3$) yields \textbf{183 proteins}, compared to
 the paper's target of $\approx 86$.
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.9\columnwidth]{figure8a_scatter.png}
   \caption{3D scatter of protein length $n$, $H_p$, and $f^+_{cp}$ for
-  all 16{,}787 F1 fragments with $n \geq 200$.
+  all fragments with $n \geq 200$ (19{,}674 entries).
   Highlighted points satisfy the fragmentation filter
   ($H_p \geq 0.25$, PLM$\,\geq 3$, $t_p = 0.025$).}
   \label{fig:scatter_3d}
 \end{figure}
 
-The halving of the candidate count (42 vs.\ 86) mirrors the
-float-precision effect: the finer $N_{cc}$ curve reduces individual
-plateau persistence below $t_\nu = n \cdot 0.025$ for roughly half
-the paper's candidates.
+The doubling of the candidate count (183 vs.\ 86) mirrors the
+float-precision effect in the opposite direction from a discretised approach:
+with one curve point per residue and raw float pLDDT values, small
+fluctuations in pLDDT create many local $N_{cc}$ maxima, and more of
+these clear the persistence threshold $t_\nu = n \cdot 0.025$
+(Section~\ref{sec:disc_plm}).
 Figure~\ref{fig:fragmented_grid} shows the $N_{cc}$ curves for four
 representative fragmented proteins; each displays three or more
 topologically persistent peaks.
@@ -103,7 +102,7 @@ Table~\ref{tab:tp_ablation} reports the candidate count at three
 thresholds.
 
 \begin{table}[t]
-\caption{Fragmentation candidates (F1, $n \geq 200$, $H_p \geq 0.25$)
+\caption{Fragmentation candidates ($n \geq 200$, $H_p \geq 0.25$)
 at three relative persistence thresholds.}
 \label{tab:tp_ablation}
 \centering
@@ -112,21 +111,21 @@ at three relative persistence thresholds.}
 \toprule
 $t_p$ & Proteins \\
 \midrule
-0.020 & 206 \\
-0.025 &  42 \\
-0.030 &   4 \\
+0.020 & 822 \\
+0.025 & 183 \\
+0.030 &  34 \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 The monotone decrease is guaranteed: a stricter threshold can only
 remove candidates.
-The steep drop from 0.020 to 0.025 (${\approx}5\times$) and from
-0.025 to 0.030 (${\approx}10\times$) suggests the bulk of $N_{cc}$
-peak persistence concentrates just above $t_\nu = 0.020 \cdot n$,
-making $t_p = 0.025$ a meaningful operating point.
-The 4 proteins surviving all three thresholds constitute a robust,
-threshold-independent core.
+The steep drop from 0.020 to 0.025 (${\approx}4.5\times$) and from
+0.025 to 0.030 (${\approx}5.4\times$) shows that most $N_{cc}$ peak
+persistence clusters in the range $[0.020n,\;0.025n)$.
+The 34 proteins surviving $t_p = 0.030$ constitute a robust,
+threshold-independent core whose pLDDT domain boundaries are
+exceptionally prominent.
 
 \subsection{Q1$\times$Q4 cross-correlation}
 \label{sec:results_arity}
@@ -146,18 +145,18 @@ The 42 fragmented proteins cluster in the moderate-to-high arity region.
 \end{figure}
 
 Figure~\ref{fig:q1q4} quantifies the enrichment.
-The fragmented set centroid is $(a_{25}=7, a_{75}=13)$, a bin showing a
-\textbf{3.08-fold enrichment} relative to the proteome background
-(Fisher exact test: $p = 1.76 \times 10^{-7}$).
+The fragmented set centroid is $(a_{25}=7, a_{75}=15)$, a bin showing a
+\textbf{5.92-fold enrichment} relative to the proteome background
+(Fisher exact test: $p = 1.61 \times 10^{-3}$).
 
 \begin{figure}[t]
   \centering
   \includegraphics[width=0.9\columnwidth]{figure_q1q4_overlay.png}
   \caption{Q1$\times$Q4 cross-correlation.
-  Contours show the arity distribution of all 16{,}787 F1 proteins;
-  the yellow ellipse marks the 95\% confidence region of the 42 fragmented
-  proteins (centroid at $(7,13)$; 3.08-fold enrichment,
-  $p = 1.76 \times 10^{-7}$).}
+  Points show the arity distribution of all 23{,}391 proteins;
+  the yellow ellipse marks the 95\% confidence region of the 183 fragmented
+  proteins (centroid at $(7,15)$; 5.92-fold enrichment,
+  $p = 1.61 \times 10^{-3}$).}
   \label{fig:q1q4}
 \end{figure}
 

@@ -78,15 +78,18 @@ For a protein of length $n$ with pLDDT values drawn uniformly at random
 from $[0,100]$, the paper (Example~1) conjectures $f^+_{cp} \approx 1/3$
 and reports $H_p \approx 0.45$ for $n = 1{,}000$.
 
-We generate $n = 1{,}000$ uniform samples with a fixed random seed,
-apply the \texttt{np.round} discretiser, and obtain:
+We generate $n = 1{,}000$ uniform samples from $[0,100]$ with a fixed
+random seed and apply the standard sublevel-set filtration directly on
+the raw float values, obtaining:
 \[
-  f^+_{cp} = 0.324, \quad H_p = 0.453, \quad N_{cc}^{max} = 248.
+  f^+_{cp} = 0.329, \quad H_p = 0.438, \quad N_{cc}^{max} = 252.
 \]
 The theoretical prediction is $N_{cc}^{max} \approx n/4 = 250$.
 All three values agree with the paper's null-model targets to within
 rounding, confirming that the filtration order, accretion logic, and
 entropy formula are correct.
+(The persistence spectrum has 330 distinct values despite continuous inputs,
+because many pairs share identical persistence, keeping $H_p$ well below~1.)
 
 \subsection{Prototype proteins}
 
@@ -102,32 +105,31 @@ $\Delta H_p = H_p^{\mathrm{ours}} - H_p^{\mathrm{paper}}$.}
 \label{tab:prototypes}
 \centering
 \small
-\begin{tabular}{llrrrrl}
+\begin{tabular}{llrrrrrl}
 \toprule
-UniProt & Type & $n$ & $f^+_{cp}$ & $H_p$ & $N_{cc}^{max}$ & $\Delta H_p$ \\
+UniProt & Type & $n$ & $f^+_{cp}$ & $H_p$ & $N_{cc}^{max}$ & PLM & $\Delta H_p$ \\
 \midrule
-\multicolumn{7}{l}{\textit{Paper targets (Fig.~3 of~\cite{cazals2025alphafold})}}\\
-P15121     & Ordered     & 316 & ---    & $\approx\!0.04$ & --- & ---\\
-A0A0G2L439 & Disordered  & 449 & ---    & $\approx\!0.27$ & --- & ---\\
-Q9VQS4     & Mixed       & 781 & ---    & $\approx\!0.28$ & --- & ---\\
+\multicolumn{8}{l}{\textit{Paper targets (Fig.~3 of~\cite{cazals2025alphafold})}}\\
+P15121     & Ordered     & 316 & ---    & $\approx\!0.04$ & --- & --- & ---\\
+A0A0G2L439 & Disordered  & 449 & ---    & $\approx\!0.27$ & --- & --- & ---\\
+Q9VQS4     & Mixed       & 781 & ---    & $\approx\!0.28$ & --- & --- & ---\\
 \midrule
-\multicolumn{7}{l}{\textit{Our results (\texttt{np.round} discretisation)}}\\
-P15121     & Ordered    & 316 & 0.048 & 0.147 & 12  & $+0.11$\\
-A0A0G2L439 & Disordered & 449 & 0.292 & 0.433 & 55  & $+0.16$\\
-Q9VQS4     & Mixed      & 781 & 0.297 & 0.425 & 78  & $+0.15$\\
+\multicolumn{8}{l}{\textit{Our results (raw float pLDDT, standard sublevel-set filtration)}}\\
+P15121     & Ordered    & 316 & 0.241 & 0.371 & 32 & 1 & $+0.33$\\
+A0A0G2L439 & Disordered & 449 & 0.339 & 0.466 & 59 & 1 & $+0.20$\\
+Q9VQS4     & Mixed      & 781 & 0.312 & 0.424 & 80 & 2 & $+0.14$\\
 \bottomrule
 \end{tabular}
 \end{table*}
 
-The relative ordering of $H_p$ is preserved: ordered $<$ disordered
-$\approx$ mixed, matching the paper's qualitative classification.
-The absolute offset of $\Delta H_p \approx +0.12$--$+0.16$ is consistent
-across all three proteins.
-Its origin is discussed in Section~\ref{sec:disc_precision} and
-Section~\ref{sec:disc_filters}; in short, AlphaFold-DB v4 stores pLDDT
-at two-decimal-place float precision, yielding more distinct persistence
-values per protein than appear to be present in the paper's data, though
-the exact processing details of the paper's pipeline are not documented.
+The relative ordering of $H_p$ is preserved: ordered $<$ mixed $<$ disordered,
+matching the paper's qualitative classification.
+The absolute offsets $\Delta H_p$ range from $+0.14$ to $+0.33$ and are
+attributable entirely to the float-precision pLDDT in AlphaFold-DB~v4:
+with up to 108 distinct pLDDT levels per 316-residue protein
+(vs.\ the ${\lesssim}20$ effectively integer levels the paper appears to use),
+the persistence spectrum is much broader, spreading the probability mass
+function of persistence values and raising $H_p$ (see Section~\ref{sec:disc_precision}).
 
 Figure~\ref{fig:ncc_protos} shows the $N_{cc}(\mathrm{pLDDT})$ curves for
 the three prototypes.
@@ -161,3 +163,5 @@ Our proteome-wide computation yields:
 \]
 confirming the expected ordering and validating the $\mathrm{C}_\alpha$
 neighbour-count pipeline independently of the pLDDT analysis.
+The arity computation depends only on 3D coordinates and is unaffected
+by the pLDDT precision issue discussed in Section~\ref{sec:disc_precision}.

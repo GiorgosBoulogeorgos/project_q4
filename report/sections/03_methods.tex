@@ -16,93 +16,33 @@ Per-residue pLDDT values are read from the B-factor column of PDB ATOM
 records using the gemmi library~\cite{wojdyr2022gemmi}.
 
 \paragraph{Fragment length filter.}
-Following the paper's Fig.~7--8 analysis, we restrict all quantitative
-comparisons to first-fragment (F1) entries with $n \geq 200$ residues
-(16{,}787 of the 23{,}391 fragments).
-Shorter fragments tend to have near-zero $H_p$ regardless of sequence
-complexity, as a small persistence spectrum trivially has few distinct
-values.
-
-\paragraph{pLDDT discretisation.}
-AlphaFold-DB v4 stores pLDDT as floating-point values.
-A 316-residue protein such as P15121 can exhibit 108 distinct raw pLDDT
-values, resulting in a persistence spectrum with many singleton
-persistence values and artificially inflated $H_p$.
-To match the paper's regime — which appears to use effectively
-integer-valued pLDDT distributions ($\lesssim\! 20$ distinct levels per
-protein) — we apply the rounding function $\ell_i = \lfloor s_i +
-0.5\rfloor$ before the filtration.
-This reduces P15121 to 13 distinct levels and brings $H_p$ within
-${\approx}0.04$ of the paper's target.
+Consistent with the paper, we apply the $n \geq 200$ criterion only to
+the Fig.~8 fragmentation candidates (three-way query: $n \geq 200$,
+$H_p \geq 0.25$, $\mathrm{PLM} \geq 3$).
+The Fig.~7 Pearson correlation is computed over all 23{,}391 fragments
+with no length restriction, matching the paper's full-proteome scatter.
 
 \subsection{Path-graph filtration}
 \label{sec:methods_filt}
 
 We implement the filtration from scratch using Union-Find with path-halving
-and the Elder Rule.
-A key design choice is \emph{batch insertion}: all residues with the same
-discretised pLDDT level $L$ are inserted as a group before any
-cross-level edges are activated.
-This ensures that intra-batch edges produce accretion pairs ($b=d=L$),
-while inter-batch edges produce positive-persistence pairs, faithfully
-capturing the multi-scale pLDDT structure.
+and the Elder Rule, following the standard sublevel-set filtration described
+in~\cite{cazals2025alphafold}.
+Residues are inserted in \emph{decreasing} pLDDT order (equivalently,
+by increasing $u = -\mathrm{pLDDT}$), one residue per step.
+Ties in pLDDT are broken by ascending residue index (stable sort).
+When a residue is inserted, each incident path-graph edge $(i, i\pm 1)$ is
+activated if the neighbour is already present; the Elder Rule then determines
+which component dies.
+Raw pLDDT values from AlphaFold-DB are used directly, without any
+pre-processing or discretisation.
 
-\medskip
-\noindent\rule{\linewidth}{0.6pt}
-\smallskip
-\noindent\textbf{Algorithm~1:} Batch-insertion pLDDT path-graph filtration.
-\smallskip
-\noindent\rule{\linewidth}{0.4pt}
-\smallskip
-\noindent\begin{minipage}{\linewidth}\small
-\noindent\textbf{Input:} pLDDT array $(s_1,\ldots,s_n)$;
-  discretiser $\delta$ (default: $\delta(x) = \lfloor x + 0.5\rfloor$)\\
-\noindent\textbf{Output:} persistence diagram $\mathcal{P}$;
-  $N_{cc}$-curve (pairs of level, count)\\[4pt]
-\noindent Compute $\ell_i \leftarrow \delta(s_i)$; form sorted distinct
-  levels $L_1 > L_2 > \cdots > L_k$\\[2pt]
-\noindent\textbf{for} each level $L \in (L_1,\ldots,L_k)$ \textbf{do}\\
-\hspace*{1.2em}$B \leftarrow \{i : \ell_i = L\}$\quad
-  \textit{// all residues at this level}\\
-\hspace*{1.2em}\textbf{for} $i \in B$ (asc.\ index):
-  insert singleton $i$;\ $\mathrm{birth}[i]\!\leftarrow\! L$;\
-  $N_{cc}\!\mathrel{+}=\!1$\\
-\hspace*{1.2em}\textbf{for} $i \in B$ (asc.\ index):\\
-\hspace*{2.4em}\textbf{if} $i > 1$ \textbf{and} $i{-}1$ is inserted:
-  \textsc{Union}$(i,\;i{-}1,\;L)$\\
-\hspace*{2.4em}\textbf{if} $i < n$ \textbf{and} $i{+}1$ is inserted
-  \textbf{and} $\ell_{i+1} > L$: \textsc{Union}$(i,\;i{+}1,\;L)$\\
-\hspace*{1.2em}Append $(L,\,N_{cc})$ to $N_{cc}$-curve for each
-  $i \in B$\\[4pt]
-\noindent\textbf{procedure} \textsc{Union}$(a,\,b,\,d)$:\quad
-  \textit{// $d$ = death pLDDT}\\
-\hspace*{1.2em}$r_a \leftarrow \textsc{Find}(a)$;\quad
-  $r_b \leftarrow \textsc{Find}(b)$\\
-\hspace*{1.2em}\textbf{if} $r_a = r_b$: append $(d,\,d)$ to $\mathcal{P}$;
-  \textbf{return}\quad\textit{// accretion}\\
-\hspace*{1.2em}\textit{survivor} $\leftarrow$ root with higher
-  $\mathrm{birth}[\cdot]$; tie-break: lower index\quad
-  \textit{// Elder Rule}\\
-\hspace*{1.2em}$\mathrm{parent}[\textit{loser}]\leftarrow\textit{survivor}$;\quad
-  $N_{cc}\!\mathrel{-}=\!1$\\
-\hspace*{1.2em}Append $(\mathrm{birth}[\textit{loser}],\;d)$ to $\mathcal{P}$
-\end{minipage}
-\smallskip
-\noindent\rule{\linewidth}{0.6pt}
-\medskip
-
-\paragraph{Edge-processing invariant.}
-Each path-graph edge is processed exactly once.
-For batch vertex $i$, the left edge $(i{-}1, i)$ is checked if $i{-}1$ is
-already inserted (covering both within-batch and cross-level left neighbours).
-The right edge $(i, i{+}1)$ is only activated when $i{+}1$ already belongs
-to a \emph{higher} level ($\ell_{i+1} > L$); within-batch right neighbours
-will encounter their own left-check on their turn, preventing double processing.
-
-\paragraph{Correctness on P15121.}
-For the 316-residue ordered protein P15121 the algorithm produces $H_p = 0.08$
-(paper target: ${\approx}0.04$); the residual offset of $0.04$ is consistent
-with the number of remaining float-precision levels after rounding.
+\paragraph{Elder Rule.}
+When two components merge at pLDDT level $d$, the component with the
+\emph{higher} birth pLDDT is older and survives as root; the younger
+component dies, contributing the pair $(\mathrm{birth}_{\mathrm{younger}},\,d)$
+to the persistence diagram.
+Tie-break on birth: lower root index survives.
 
 \subsection{Five statistics}
 \label{sec:methods_stats}
