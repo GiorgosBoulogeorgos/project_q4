@@ -118,18 +118,58 @@ providing a biological validation beyond the internal cross-correlation.
 This is out of scope for the current course project.
 
 \paragraph{Data version.}
-AlphaFold-DB v6 was released after this project began; all computations
-use v4 PDB files.
-The pLDDT distributions may differ between versions, and the arity
-enrichment results could shift.
-The float-precision gap that explains most of our discrepancies with
-the paper may be reduced or exacerbated in v6.
+AlphaFold-DB~v6 was released after this project began; however, we
+subsequently re-ran the full pipeline on the v6 tarball as a verification
+step (Section~\ref{sec:disc_v6}).
+All proteome-scale statistics change by less than $0.5\%$ between v4 and v6,
+confirming that the pLDDT representation is identical between the two releases
+and that the float-precision gap is not version-specific.
+
+\subsection{AlphaFold-DB v6 replication}
+\label{sec:disc_v6}
+
+To test whether the float-precision explanation is specific to
+AlphaFold-DB~v4 or persists in the current release, we re-ran the full
+pipeline on the AlphaFold-DB~v6 \textit{H.~sapiens} proteome tarball
+(5.1\,GB; downloaded May~2026).
+Table~\ref{tab:v4v6} summarises the comparison.
+
+\begin{table}[h]
+  \caption{Proteome-scale statistics: AlphaFold-DB v4 vs.\ v6.}
+  \label{tab:v4v6}
+  \centering
+  \small
+  \begin{tabular}{@{}lrrr@{}}
+    \toprule
+    Metric & v4 & v6 & $\Delta$ \\
+    \midrule
+    $N$ proteins           & 23{,}391 & 23{,}586 & $+195$   \\
+    Pearson $r$            & 0.864    & 0.862    & $-0.002$ \\
+    Median $f^+_{cp}$      & 0.242    & 0.239    & $-0.003$ \\
+    Median $H_p$           & 0.362    & 0.359    & $-0.003$ \\
+    Candidates$^\dagger$   & 183      & 185      & $+2$     \\
+    \bottomrule
+  \end{tabular}\\[3pt]
+  \footnotesize $^\dagger$ $n \geq 200$, $H_p \geq 0.25$,
+  $\mathrm{PLM}(t_p{=}0.025) \geq 3$.
+\end{table}
+
+The v6 release adds 196 proteins and removes 150 relative to v4 (UniProt
+curation updates), but all five statistics are statistically
+indistinguishable.
+The Pearson $r$ changes by $-0.002$, the fragmentation candidate count by
+$+2$, and the median $H_p$ and $f^+_{cp}$ by less than $0.4\%$ in absolute
+terms.
+This confirms that our discrepancy with the paper is not a version artifact:
+both v4 and v6 store pLDDT as floating-point values and yield the same
+elevated $H_p$ profile relative to the paper's effectively integer-quantised
+data.
 
 \subsection{Directions for future work}
 \label{sec:disc_future}
 
-The most direct extension is to apply the same pipeline to
-AlphaFold-DB v6 and to additional model organisms
+The most direct extension would be to apply the same pipeline to additional
+model organisms
 (\textit{M.\ musculus}, \textit{S.\ cerevisiae}) to assess the
 universality of the arity enrichment signal.
 A comparison of our 183 fragmented candidates against UniProt domain

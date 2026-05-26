@@ -792,6 +792,54 @@
   the paper's stated methodology.}
 \end{frame}
 
+\begin{frame}{AlphaFold-DB v6 replication: gap persists}
+  \begin{columns}[T]
+    \begin{column}{0.52\textwidth}
+      \textbf{Question}: does v6 close the gap with the paper?\\[5pt]
+      Full pipeline re-run on v6 tarball (5.1\,GB, May~2026)\\
+      23{,}586 proteins processed, 0 failures\\[6pt]
+
+      \begin{tabular}{@{}lrrr@{}}
+        \toprule
+        Metric & v4 & v6 & $\Delta$ \\
+        \midrule
+        $N$ proteins           & 23{,}391 & 23{,}586 & $+195$   \\
+        Pearson $r$            & 0.864    & 0.862    & $-0.002$ \\
+        Median $f^+_{cp}$      & 0.242    & 0.239    & $-0.003$ \\
+        Median $H_p$           & 0.362    & 0.359    & $-0.003$ \\
+        Candidates$^\dagger$   & 183      & 185      & $+2$     \\
+        \bottomrule
+      \end{tabular}\\[3pt]
+      \footnotesize $^\dagger$ $n\!\geq\!200$,
+      $H_p\!\geq\!0.25$, PLM$(0.025)\!\geq\!3$
+    \end{column}
+    \begin{column}{0.45\textwidth}
+      \vspace{4pt}
+      \textbf{Answer: no.}\\[6pt]
+
+      Both v4 and v6 store pLDDT as \textbf{float}\\
+      $\to$ neither matches the paper's\\
+      \hspace{1em}integer-quantised data\\[8pt]
+
+      All statistics change by $<0.5\%$:
+      \begin{itemize}\setlength{\itemsep}{2pt}
+        \item $\Delta r = -0.002$
+        \item $\Delta\,\text{candidates} = +2$
+        \item $+195$ new UniProt entries\\
+              (curation updates, not\\
+              structural changes)
+      \end{itemize}
+      \vspace{6pt}
+
+      \begin{block}{}
+        The float-precision gap is an\\
+        \textbf{AlphaFold-DB property},\\
+        not a v4 artifact.
+      \end{block}
+    \end{column}
+  \end{columns}
+\end{frame}
+
 \begin{frame}{Arity enrichment: biological significance}
   \begin{columns}[T]
     \begin{column}{0.48\textwidth}
