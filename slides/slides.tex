@@ -31,6 +31,7 @@
 }
 \subtitle{Algorithms in Structural Bioinformatics — Q4 Project}
 \author{Giorgos Boulogeorgos}
+\institute{Supervisor: Professor I. Emiris}
 \date{May 2026}
 
 % ─────────────────────────────────────────────────────────────────────────────
@@ -54,15 +55,15 @@
   \begin{columns}[T]
     \begin{column}{0.52\textwidth}
       \textbf{pLDDT} (predicted Local Distance Difference Test)
-      \begin{itemize}
+      \begin{itemize}\setlength{\itemsep}{0pt}
         \item Per-residue confidence score, $s_i \in [0, 100]$
         \item Stored in the B-factor column of AlphaFold PDB files
         \item $s_i \gtrsim 70$: well-folded region
         \item $s_i \lesssim 50$: intrinsically disordered
       \end{itemize}
-      \vspace{6pt}
+      \vspace{2pt}
       \textbf{Key observation}
-      \begin{itemize}
+      \begin{itemize}\setlength{\itemsep}{0pt}
         \item Most analyses use pLDDT as a \emph{threshold} (keep/discard)
         \item \textbf{Cazals \& Sarti (2025)} treat the full pLDDT
               \emph{profile along the chain} as a topological object
@@ -71,7 +72,8 @@
     \end{column}
     \begin{column}{0.45\textwidth}
       % Schematic pLDDT profile — pure TikZ, x:0-50 y:0-105
-      \begin{tikzpicture}[x=0.10cm, y=0.037cm]
+      \vspace{-4pt}
+      \begin{tikzpicture}[x=0.10cm, y=0.032cm]
         % Light grid
         \foreach \y in {50,70,90,100}
           \draw[gray!25,thin] (0,\y) -- (50,\y);
@@ -111,11 +113,10 @@
       \end{tikzpicture}
     \end{column}
   \end{columns}
-  \vspace{4pt}
+  \vspace{-3pt}
   \begin{block}{Project goal}
-    Reproduce the full Q4 fragmentation pipeline on the complete
-    \textit{H.~sapiens} proteome (23\,391 AlphaFold-DB v4 fragments) and
-    extend it with a novel 3D arity cross-correlation.
+    {\footnotesize Reproduce Q4 pLDDT fragmentation on 23\,391 \textit{H.~sapiens}
+    fragments; extend with a Q1 arity cross-correlation.}
   \end{block}
 \end{frame}
 
@@ -224,29 +225,29 @@
     \begin{column}{0.48\textwidth}
       Let $m=n{-}1$, $m'=$ positive-persistence pairs,\\
       $\mathcal{P}_D=$ set of distinct persistence values.
-      \vspace{6pt}
+      \vspace{2pt}
 
-      \begin{enumerate}
+      \begin{enumerate}\setlength{\itemsep}{0pt}\setlength{\parsep}{0pt}
         \item $\displaystyle f^+_{cp} = \frac{m'}{n-1}$\\
               \emph{Fraction of heterogeneous transitions}
-        \vspace{4pt}
+        \vspace{2pt}
         \item $\displaystyle \bar{p} = \frac{1}{m}\sum_i (b_i - d_i)$\\
               \emph{Mean persistence lifetime}
-        \vspace{4pt}
+        \vspace{2pt}
         \item $\displaystyle H_p = \frac{-\sum_{v} \mathbb{P}[v]\ln\mathbb{P}[v]}{\ln|\mathcal{P}_D|}$\\
               \emph{Normalised Shannon entropy of persistence}\\
               $H_p \in [0,1]$; high $=$ diverse pLDDT profile
-        \vspace{4pt}
+        \vspace{2pt}
         \item $N_{cc}^{max} = \max_u N_{cc}(u)$\\
               \emph{Peak simultaneous fragmentation}
-        \vspace{4pt}
+        \vspace{2pt}
         \item $\mathrm{PLM}(t_p)$: persistent local maxima of $N_{cc}$\\
               \emph{Number of significant domain peaks}
       \end{enumerate}
     \end{column}
     \begin{column}{0.48\textwidth}
       % Ncc curve — pure TikZ, x-axis: 0=pLDDT100, 100=pLDDT0; y:0-5.5
-      \begin{tikzpicture}[x=0.052cm, y=0.70cm]
+      \begin{tikzpicture}[x=0.052cm, y=0.60cm]
         % Light grid
         \foreach \x in {20,40,60,80,100}
           \draw[gray!20,thin] (\x,0) -- (\x,5);
@@ -282,7 +283,7 @@
         % Title
         \node[font=\small,anchor=south] at (50,5.7) {$N_{cc}$ curve and PLM peaks};
       \end{tikzpicture}
-      \vspace{-2pt}
+      \vspace{-6pt}
 
       \footnotesize PLM$\,\geq 3$ at $t_p = 0.025$ flags a protein as a
       \textbf{multi-domain fragmentation candidate}.
@@ -608,10 +609,10 @@
       Ordered $<$ Mixed $<$ Disordered \;\checkmark
     \end{column}
     \begin{column}{0.47\textwidth}
-      \textbf{Why are our $H_p$ values higher?}
+      \hspace{0.9cm}\textbf{Why are our $H_p$ values higher?}
       \vspace{4pt}
 
-      \begin{tikzpicture}[scale=0.8]
+      \hspace{0.9cm}\begin{tikzpicture}[scale=0.8]
         \draw[thick, ->] (0,0) -- (5.5,0) node[right, font=\tiny] {pLDDT levels};
         \draw[thick, ->] (0,0) -- (0,3) node[above, font=\tiny] {frequency};
         % Integer pLDDT (few broad bars)
@@ -630,8 +631,10 @@
       \end{tikzpicture}
 
       \vspace{4pt}
+      \hspace{0.9cm}\begin{minipage}{0.85\linewidth}
       \footnotesize More distinct pLDDT levels $\to$ more distinct persistence
       values $\to$ broader $\mathbb{P}[v]$ $\to$ higher $H_p$.
+      \end{minipage}
     \end{column}
   \end{columns}
 \end{frame}
@@ -643,13 +646,13 @@
 \begin{frame}{Proteome-scale Pearson correlation (Figure 7)}
   \begin{columns}[T]
     \begin{column}{0.55\textwidth}
-      \includegraphics[width=\textwidth]{../data/results/figure7_full.png}
+      \includegraphics[width=\textwidth, height=6.6cm, keepaspectratio]{../data/results/figure7_full.png}
     \end{column}
     \begin{column}{0.42\textwidth}
-      \vspace{10pt}
+      \vspace{2pt}
       \textbf{Setup}: all 23\,391 AlphaFold-DB v4 fragments\\
       No length pre-filter (paper-faithful)
-      \vspace{10pt}
+      \vspace{4pt}
 
       \begin{tabular}{@{}lr@{}}
         \toprule
@@ -661,12 +664,12 @@
         Gap & $-0.106$ \\
         \bottomrule
       \end{tabular}
-      \vspace{10pt}
+      \vspace{4pt}
 
       \textbf{Both statistics elevated} (diagonal shift)\\
       $\to$ slope preserved, variance increased\\
       $\to$ $r$ reduced by float-precision effect
-      \vspace{6pt}
+      \vspace{4pt}
 
       \footnotesize Median $f^+_{cp} = 0.242$,
       Median $H_p = 0.362$
@@ -719,11 +722,11 @@
       \includegraphics[width=\textwidth]{../data/results/figure_q1q4_overlay.png}
     \end{column}
     \begin{column}{0.45\textwidth}
-      \vspace{6pt}
+      \vspace{2pt}
       \textbf{Finding}: fragmented proteins (PLM$\,\geq 3$) cluster in a
       specific arity bin
 
-      \vspace{6pt}
+      \vspace{2pt}
       \begin{tabular}{@{}ll@{}}
         \toprule
         Property & Value \\
@@ -734,17 +737,17 @@
         Test & Fisher exact \\
         \bottomrule
       \end{tabular}
-      \vspace{8pt}
+      \vspace{3pt}
 
       \textbf{Biological interpretation}
-      \begin{itemize}
+      \begin{itemize}\setlength{\itemsep}{0pt}\setlength{\parsep}{0pt}
         \item $a_{25}\approx7$: disordered linkers with few contacts
         \item $a_{75}\approx15$: well-packed domain cores
         \item Intermediate arity = mix of compact domains + disordered linkers
               = \textbf{multi-domain hallmark}
       \end{itemize}
 
-      \vspace{4pt}
+      \vspace{0pt}
       \footnotesize This finding is \emph{orthogonal} to pLDDT — derived
       purely from 3D $\mathrm{C}_\alpha$ coordinates.
     \end{column}
@@ -758,22 +761,22 @@
 \begin{frame}{The float-precision gap — unified explanation}
   \begin{center}
   \begin{tikzpicture}[
-    node distance=0.6cm and 0.5cm,
+    node distance=0.45cm and 0.4cm,
     cause/.style={draw=lowhp, fill=lowhp!10, rounded corners=4pt,
-                  minimum width=4cm, minimum height=0.8cm,
+                  minimum width=4cm, minimum height=0.65cm,
                   align=center, font=\small, text width=4cm},
     effect/.style={draw=highhp, fill=highhp!10, rounded corners=4pt,
-                   minimum width=3.6cm, minimum height=0.8cm,
+                   minimum width=3.6cm, minimum height=0.65cm,
                    align=center, font=\small, text width=3.5cm},
     arr/.style={-Stealth, thick, gray},
   ]
     \node[cause] (root) {\textbf{Root cause}\\AlphaFold-DB v4:\\float pLDDT ($\gtrsim$100 levels)\\vs.\ paper's $\lesssim$20 int levels};
-    \node[effect, below left=0.8cm and 0.5cm of root]  (e1) {More distinct\\persistence values\\in $\mathcal{P}_D$};
-    \node[effect, below right=0.8cm and 0.5cm of root] (e2) {Finer $N_{cc}$ curve\\more local\\oscillations};
-    \node[cause, below=0.9cm of e1]  (c1) {$H_p$ inflated\\(+0.14 to +0.33)};
-    \node[cause, below=0.9cm of e2]  (c2) {More PLM peaks\\survive $t_\nu$};
-    \node[effect, below=0.7cm of c1] (r1) {Pearson $r$:\\0.864 vs 0.97};
-    \node[effect, below=0.7cm of c2] (r2) {Candidates:\\183 vs 86};
+    \node[effect, below left=0.45cm and 0.35cm of root]  (e1) {More distinct\\persistence values\\in $\mathcal{P}_D$};
+    \node[effect, below right=0.45cm and 0.35cm of root] (e2) {Finer $N_{cc}$ curve\\more local\\oscillations};
+    \node[cause, below=0.45cm of e1]  (c1) {$H_p$ inflated\\(+0.14 to +0.33)};
+    \node[cause, below=0.45cm of e2]  (c2) {More PLM peaks\\survive $t_\nu$};
+    \node[effect, below=0.40cm of c1] (r1) {Pearson $r$:\\0.864 vs 0.97};
+    \node[effect, below=0.40cm of c2] (r2) {Candidates:\\183 vs 86};
 
     \draw[arr] (root) -- (e1);
     \draw[arr] (root) -- (e2);
@@ -783,7 +786,7 @@
     \draw[arr] (c2) -- (r2);
   \end{tikzpicture}
   \end{center}
-  \vspace{4pt}
+  \vspace{1pt}
   {\small Both gaps share a single falsifiable hypothesis: reproducing the analysis
   on integer-rounded pLDDT would close them — at the cost of departing from
   the paper's stated methodology.}
@@ -894,7 +897,6 @@
     \begin{tabular}{ll}
       Paper: & Cazals \& Sarti (2025), bioRxiv 2024.11.16.623929 \\
       Data:  & AlphaFold-DB v4 — \textit{H.~sapiens} proteome \\
-      Code:  & Python, available with the submission \\
     \end{tabular}
     \vspace{8pt}
 
