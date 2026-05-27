@@ -30,9 +30,18 @@ results/figures/
 .DS_Store
 Thumbs.db
 
+# ── Project-local config ──────────────────────────────────────────────────────
+CLAUDE.md
+conftest.py
+
 # --- report ---
 report/main.tex
 report/refs.bib
 
 # --- slides ---
 slides/slides.pptx
+slides/slides.tex
+
+# --- docs ---
+docs/hp_investigation.md
+docs/project_plan.md
