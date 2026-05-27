@@ -36,6 +36,8 @@ CLAUDE.md
 # --- report ---
 report/main.tex
 report/refs.bib
+report/sections/
+report/figures/
 
 # --- slides ---
 slides/slides.pptx
