@@ -2,6 +2,7 @@
 
 % ── Encoding & fonts ───────────────────────────────────────────────────────────
 \usepackage[utf8]{inputenc}
+\usepackage{lmodern}
 % IEEEtran defaults to Courier for \texttt{}; use CM typewriter instead
 % (Courier .tfm not present in basic TeX Live 2026).
 \renewcommand{\ttdefault}{cmtt}
@@ -46,14 +47,15 @@
   \IEEEauthorblockN{Giorgos Boulogeorgos}\\
   \IEEEauthorblockA{%
     Course: Algorithms in Structural Bioinformatics\\
-    Academic Year 2025--2026}
+    Academic Year 2025--2026\\[2pt]
+    Supervisor: Prof.\ I.~Emiris\quad Co-advisor: P.~Rigas}
 }
 
 \maketitle
 
 % ── Abstract ──────────────────────────────────────────────────────────────────
 \begin{abstract}
-{\mdseries\input{sections/abstract}}
+{\normalfont\small\fontfamily{lmss}\selectfont\input{sections/abstract}}
 \end{abstract}
 
 % ── Keywords ──────────────────────────────────────────────────────────────────
