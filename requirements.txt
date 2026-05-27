@@ -11,7 +11,6 @@ pyarrow>=14.0        # required for pandas parquet read/write
 
 # ── Visualisation ─────────────────────────────────────────────────────────────
 matplotlib>=3.8
-seaborn>=0.13
 
 # ── Topological data analysis ─────────────────────────────────────────────────
 # gudhi: if `pip install gudhi` fails, use conda-forge instead:
@@ -25,3 +24,6 @@ tqdm>=4.66
 # ── Notebooks ─────────────────────────────────────────────────────────────────
 notebook>=7.0
 ipykernel>=6.27
+
+# ── Testing ───────────────────────────────────────────────────────────────────
+pytest>=7.4
