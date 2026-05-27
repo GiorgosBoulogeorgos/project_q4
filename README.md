@@ -1,14 +1,12 @@
 # Q4 — pLDDT Fragmentation of AlphaFold Predictions at Proteome Scale
 
-![Python](https://img.shields.io/badge/python-3.11%2B-blue)
-
 Course project for **Algorithms in Structural Bioinformatics** (Academic Year 2025–2026).
 
 This repository reproduces **Q4** of Cazals & Sarti (2025) — pLDDT-based fragmentation analysis of AlphaFold reconstructions — at the scale of the complete *H. sapiens* proteome (~23 000 AlphaFold-DB fragment files), and extends it with a **Q1 arity cross-correlation** analysis.
 
 The core algorithm (path-graph filtration + persistence diagram via Union-Find with the Elder Rule) is implemented **from scratch** in Python, without any TDA library, following the paper exactly.
 
-**Supervisor:** Prof. I. Emiris &nbsp;·&nbsp; **Co-advisor:** P. Rigas
+**Supervisor:** Prof. I. Emiris  ·  **Co-advisor:** P. Rigas
 
 ---
 
@@ -17,17 +15,19 @@ The core algorithm (path-graph filtration + persistence diagram via Union-Find w
 F. Cazals & A. Sarti (2025).
 *AlphaFold predictions on whole genomes at a glance: a coherent view on packing properties, pLDDT values, and disordered regions.*
 bioRxiv 2024.11.16.623929 v4.
-<https://doi.org/10.1101/2024.11.16.623929>
+[https://doi.org/10.1101/2024.11.16.623929](https://doi.org/10.1101/2024.11.16.623929)
 
 ---
 
 ## Results at a glance
 
-| Target (paper) | This reproduction |
-|---|---|
-| Pearson r(f⁺_cp, H_p) ≈ 0.97 | r = 0.864 (gap explained by float-precision pLDDT in v4) |
-| ~86 fragmentation candidates at t_p = 0.025 | 183 candidates (same precision-shift explanation) |
-| H_p ≈ 0.04 / 0.27 / 0.28 for ordered / disordered / mixed prototypes | Reproduced within ±0.03 |
+
+| Target (paper)                                                       | This reproduction                                        |
+| -------------------------------------------------------------------- | -------------------------------------------------------- |
+| Pearson r(f⁺_cp, H_p) ≈ 0.97                                         | r = 0.864 (gap explained by float-precision pLDDT in v4) |
+| ~86 fragmentation candidates at t_p = 0.025                          | 183 candidates (same precision-shift explanation)        |
+| H_p ≈ 0.04 / 0.27 / 0.28 for ordered / disordered / mixed prototypes | Reproduced within ±0.03                                  |
+
 
 ---
 
@@ -133,7 +133,7 @@ for uid, expected_hp in [('P15121', 0.04), ('A0A0G2L439', 0.27), ('Q9VQS4', 0.28
 ### Step 3 — Full proteome run (requires ~11 GB download)
 
 Download the *H. sapiens* AlphaFold-DB v4 tarball from
-<https://alphafold.ebi.ac.uk/download> into `data/hsapiens/`, then:
+[https://alphafold.ebi.ac.uk/download](https://alphafold.ebi.ac.uk/download) into `data/hsapiens/`, then:
 
 ```bash
 python src/run_full_proteome.py          # writes results/proteome_stats.parquet
@@ -149,12 +149,14 @@ For a guided walkthrough open the notebooks in order:
 jupyter notebook notebooks/
 ```
 
-| Notebook | Content |
-|---|---|
-| `01_single_protein_walkthrough.ipynb` | Filtration step-by-step on one protein |
-| `02_null_model.ipynb` | Random pLDDT baseline and Conjecture 1 |
-| `03_prototypes_figure3.ipynb` | Reproduce Figure 3 (three prototype proteins) |
-| `04_proteome_figures7_8.ipynb` | Reproduce Figures 7 and 8 at proteome scale |
+
+| Notebook                              | Content                                       |
+| ------------------------------------- | --------------------------------------------- |
+| `01_single_protein_walkthrough.ipynb` | Filtration step-by-step on one protein        |
+| `02_null_model.ipynb`                 | Random pLDDT baseline and Conjecture 1        |
+| `03_prototypes_figure3.ipynb`         | Reproduce Figure 3 (three prototype proteins) |
+| `04_proteome_figures7_8.ipynb`        | Reproduce Figures 7 and 8 at proteome scale   |
+
 
 ---
 

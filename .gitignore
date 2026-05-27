@@ -7,6 +7,8 @@ __pycache__/
 dist/
 build/
 .venv/
+.claude/
+.pytest_cache/
 
 # ── Data downloads (re-run src/download.py to populate) ──────────────────────
 data/
@@ -27,3 +29,10 @@ results/figures/
 # ── OS ────────────────────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
+
+# --- report ---
+report/main.tex
+report/refs.bib
+
+# --- slides ---
+slides/slides.pptx
