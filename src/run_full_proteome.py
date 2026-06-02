@@ -10,7 +10,9 @@ Workflow
 1. Download UP000005640_9606_HUMAN_v4.tar (~11 GB, resumed if interrupted).
 2. Stream the tar member-by-member; each member is a gzip-compressed PDB.
 3. Decompress each member in memory; send bytes to a process-pool worker.
-4. Worker: parse with gemmi.read_pdb_string, run build_pd_and_ncc, compute
+4. Worker: parse with gemmi.read_pdb_string, run build_pd_and_ncc (which by
+   default rounds pLDDT to integers in [0, 100] before the filtration —
+   the default behaviour as of the integer-pLDDT switch), compute
    n_residues, f⁺_cp, mean_persistence, H_p, ncc_max, PLM(t_p).
 5. Flush to data/results/proteome_full.parquet every FLUSH_EVERY proteins
    using PyArrow ParquetWriter (row-group append).

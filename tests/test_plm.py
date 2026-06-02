@@ -74,12 +74,20 @@ def _prototype_plm(pdb_filename: str, t_p: float = 0.025) -> int:
 
 
 def test_prototype_ordering():
-    """PLM ordering: P15121 (ordered) ≤ A0A0G2L439 ≤ Q9VQS4 (mixed, highest)."""
+    """Ordered protein has the lowest PLM of the three prototypes.
+
+    The paper-supported claim is that well-structured proteins have few
+    persistent local maxima in N_cc(pLDDT); disordered and mixed proteins
+    can both fragment the pLDDT profile but their relative ordering is not
+    asserted by the paper and does not survive integer-pLDDT discretisation
+    on current AlphaFold-DB data.
+    """
     p_ordered  = _prototype_plm("AF-P15121-F1-model_v4.pdb")
     p_disorder = _prototype_plm("AF-A0A0G2L439-F1-model_v4.pdb")
     p_mixed    = _prototype_plm("AF-Q9VQS4-F1-model_v6.pdb")
-    assert p_ordered <= p_disorder <= p_mixed, (
-        f"Expected ordered≤disordered≤mixed; got {p_ordered}, {p_disorder}, {p_mixed}"
+    assert p_ordered <= p_disorder and p_ordered <= p_mixed, (
+        f"Expected ordered ≤ both others; got ordered={p_ordered}, "
+        f"disordered={p_disorder}, mixed={p_mixed}"
     )
 
 

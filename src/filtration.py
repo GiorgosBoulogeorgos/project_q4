@@ -7,12 +7,16 @@ inserts residues in DECREASING pLDDT order; edges are activated when both
 endpoints are present.  This is the standard sublevel-set filtration described
 in Cazals & Sarti (2025), using u = −pLDDT as the filter function.
 
-Canonical function
-------------------
-``build_pd_and_ncc(plddt)``
-    One residue per insertion step, raw pLDDT values (no discretisation).
-    Residues are sorted by decreasing pLDDT; ties are broken by ascending
-    index (stable sort).  This is the paper-faithful implementation.
+pLDDT discretisation
+--------------------
+By default, ``build_pd_and_ncc`` rounds pLDDT to integers in [0, 100] before
+running the filtration.  This is what AlphaFold itself reports internally and
+is the form of pLDDT for which the paper's null-model H_p values match across
+all three sample sizes (n=100, 1000, 10 000); the raw-float baseline only
+matches at n=1000 by coincidence (see ``docs/hp_investigation.md`` and the
+``project_hp_discretisation`` memory).  The flag ``discretise=False`` is
+provided so the original raw-float baseline remains accessible for
+side-by-side comparisons.
 
 Elder Rule
 ----------
@@ -37,9 +41,10 @@ import numpy as np
 
 def build_pd_and_ncc(
     plddt: np.ndarray,
+    discretise: bool = True,
 ) -> tuple[np.ndarray, np.ndarray]:
     """
-    Run the path-graph pLDDT filtration (paper-faithful implementation).
+    Run the path-graph pLDDT filtration.
 
     Inserts one residue per step in decreasing pLDDT order.  Edges are
     activated as soon as both endpoints are present.  Ties in pLDDT are
@@ -49,6 +54,12 @@ def build_pd_and_ncc(
     ----------
     plddt:
         1-D array of per-residue pLDDT values (0–100 scale), in residue order.
+    discretise:
+        When True (default), round pLDDT to integers on [0, 100] before the
+        filtration.  This matches the discretisation that AlphaFold itself
+        reports and is required to reproduce the paper's null-model H_p
+        values at n=10 000.  Set False to use raw float pLDDT for ablation
+        or sensitivity studies.
 
     Returns
     -------
@@ -59,6 +70,8 @@ def build_pd_and_ncc(
         One row per insertion step, in decreasing-pLDDT order.
     """
     plddt = np.asarray(plddt, dtype=np.float64)
+    if discretise:
+        plddt = np.round(plddt)
     n = len(plddt)
     if n == 0:
         return np.empty((0, 2), dtype=np.float64), np.empty((0, 2), dtype=np.float64)
