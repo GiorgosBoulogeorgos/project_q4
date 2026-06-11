@@ -123,7 +123,7 @@ pip install -r requirements.txt
 pytest tests/ -q
 ```
 
-All 56 tests should pass. The suite covers `filtration`, `statistics`, `null_model`, `plm`, `parse`, and `arity`, including regression tests for the three prototype proteins under the integer + batched default.
+All 57 tests should pass. The suite covers `filtration`, `statistics`, `null_model`, `plm`, `parse`, and `arity`, including regression tests for the three prototype proteins under the integer + batched default and for the inverse-CDF arity signature (paper Def. 2).
 
 ---
 
