@@ -42,11 +42,18 @@ def arity_signature(
     """
     Return the (arity_q1, arity_q2) signature of a protein.
 
-    Default percentiles: 25th and 75th (paper convention).
-    Values are floored to int via np.percentile's linear interpolation.
+    Default quantiles: 25th and 75th (paper convention).
+
+    Per Cazals & Sarti (2025), Def. 2 / Eq. 2, the arity at quantile q is the
+    *inverse empirical CDF*: the smallest observed arity a such that
+    CDF_Cα(a) >= q.  This is ``np.quantile(..., method="inverted_cdf")`` — it
+    always returns an arity that actually occurs in the protein.  (Plain
+    ``np.percentile`` uses linear interpolation, which can return a value
+    between two observed arities — e.g. 9 for a distribution whose arities jump
+    3 -> 12 — and therefore does not match the paper's definition.)
     """
     arities = arity_per_residue(ca_coords, r=r)
     return (
-        int(np.percentile(arities, q1 * 100)),
-        int(np.percentile(arities, q2 * 100)),
+        int(np.quantile(arities, q1, method="inverted_cdf")),
+        int(np.quantile(arities, q2, method="inverted_cdf")),
     )
