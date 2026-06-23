@@ -71,9 +71,12 @@ src/
   run_v6_proteome.py   – same pipeline against the v6 tarball
   run_tp_ablation.py   – three-threshold PLM ablation at t_p ∈ {0.020, 0.025, 0.030}
   run_arity.py         – arity signatures proteome-wide
+  run_organism.py      – full pipeline for any model organism (mouse/rat/yeast)
+  compare_organisms.py – cross-organism comparison table + Pearson-r figure
   plots.py             – figure7 / figure8_scatter / figure8_panels helpers
-tests/                 – pytest unit tests for every algorithm module (56 tests)
-notebooks/             – four Jupyter notebooks (walkthrough → proteome figures)
+tests/                 – pytest unit tests for every algorithm module (57 tests)
+notebooks/             – seven Jupyter notebooks (walkthrough → proteome figures,
+                         incl. per-organism copies of notebook 04)
 report/                – LaTeX source (IEEEtran, gitignored) + compiled PDF (tracked)
 slides/                – Beamer LaTeX source + PDF + PPTX export
 data/
@@ -189,6 +192,9 @@ jupyter notebook notebooks/
 | `02_null_model.ipynb`                 | Random pLDDT baseline and Conjecture 1        |
 | `03_prototypes_figure3.ipynb`         | Reproduce Figure 1 (three prototype proteins) |
 | `04_proteome_figures7_8.ipynb`        | Reproduce Figures 7 and 8 at proteome scale   |
+| `04_proteome_figures7_8_mouse.ipynb`  | Figures 7/8 for *M. musculus* (v6)            |
+| `04_proteome_figures7_8_rat.ipynb`    | Figures 7/8 for *R. norvegicus* (v6)          |
+| `04_proteome_figures7_8_yeast.ipynb`  | Figures 7/8 for *S. cerevisiae* (v6)          |
 
 
 ---

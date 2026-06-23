@@ -94,7 +94,9 @@ def run_species(
             f"Unknown species {species!r}. Supported: {sorted(_PROTEOME_IDS)}"
         )
 
-    org      = _DATA_DIR[species].split("/")[-1] if species == "HUMAN" else species.lower()
+    # output filename token; HUMAN is supported for completeness, but its
+    # canonical v6 run is run_v6_proteome.py (-> proteome_v6_full.parquet).
+    org      = "hsapiens" if species == "HUMAN" else species.lower()
     tar_dir  = _ROOT / "data" / _DATA_DIR[species]
     tar_path = tar_path or ensure_tarball(species, version, tar_dir)
 
