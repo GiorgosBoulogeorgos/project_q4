@@ -7,7 +7,7 @@ Usage
 
 Workflow
 --------
-1. Download UP000005640_9606_HUMAN_v4.tar (~11 GB, resumed if interrupted).
+1. Download UP000005640_9606_HUMAN_v4.tar (~5 GB, resumed if interrupted).
 2. Stream the tar member-by-member; each member is a gzip-compressed PDB.
 3. Decompress each member in memory; send bytes to a process-pool worker.
 4. Worker: parse with gemmi.read_pdb_string, run build_pd_and_ncc (which by

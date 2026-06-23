@@ -11,8 +11,15 @@ build/
 .pytest_cache/
 
 # ── Data downloads (re-run src/download.py to populate) ──────────────────────
-data/
+data/*
+# Keep the small prototype PDBs in-repo (some are no longer downloadable from
+# AlphaFold-DB, e.g. A0A0G2L439); never the multi-GB proteome tarballs/parquets.
+!data/prototypes/
+data/prototypes/*
 !data/prototypes/.gitkeep
+!data/prototypes/*.pdb
+!data/hsapiens/
+data/hsapiens/*
 !data/hsapiens/.gitkeep
 
 # Proteome tarballs

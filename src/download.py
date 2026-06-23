@@ -228,7 +228,7 @@ def download_proteome(species: str, out_dir: Path) -> Path:
     species:
         Case-insensitive species code.  Supported values:
 
-        * ``"HUMAN"`` — H. sapiens (UP000005640, ~11 GB)
+        * ``"HUMAN"`` — H. sapiens (UP000005640, ~5 GB)
         * ``"MOUSE"`` — M. musculus (UP000000589)
         * ``"RAT"``   — R. norvegicus (UP000002494)
         * ``"YEAST"`` — S. cerevisiae (UP000002311)
@@ -249,7 +249,7 @@ def download_proteome(species: str, out_dir: Path) -> Path:
             UP000005640_9606_HUMAN_v4.tar
 
     Do **not** call this function during smoke tests — the H. sapiens
-    tarball is approximately 11 GB compressed.
+    tarball is approximately 5 GB compressed.
     """
     species = species.upper()
     if species not in _PROTEOME_IDS:

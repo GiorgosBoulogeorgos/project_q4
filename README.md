@@ -79,7 +79,7 @@ notebooks/             – seven Jupyter notebooks (walkthrough → proteome fig
                          incl. per-organism copies of notebook 04)
 report/                – LaTeX source (IEEEtran, gitignored) + compiled PDF (tracked)
 data/
-  prototypes/          – three prototype PDB files (downloaded by download.py)
+  prototypes/          – prototype PDB files for the 3 proteins (bundled, ~1.2 MB)
   hsapiens/            – AlphaFold-DB proteome tarballs (~5 GB each, not committed)
   results/             – parquet files produced by the pipeline
 ```
@@ -131,13 +131,13 @@ All 57 tests should pass. The suite covers `filtration`, `statistics`, `null_mod
 
 ## Reproducing the results
 
-### Step 1 — Download the three prototype proteins
+### Step 1 — Prototype proteins (bundled)
 
-```bash
-python src/download.py
-```
-
-Downloads ~500 KB of PDB files into `data/prototypes/`. No proteome data needed for prototype validation.
+The PDB files for the three prototype proteins are committed under
+`data/prototypes/` (~1.2 MB), so prototype validation (Step 2) needs no
+download. `python src/download.py` is kept as an optional refresh, but note
+that AlphaFold-DB has since removed some individual files (A0A0G2L439 is no
+longer available; P15121/Q9VQS4 now resolve to v6), so it may 404.
 
 ### Step 2 — Validate prototypes
 
@@ -163,10 +163,12 @@ for uid, paper_hp, path in PROTOS:
 
 Expected output under the integer + batched default: `H_p ≈ 0.147 / 0.433 / 0.425`. See *Results at a glance* above for the explanation of the residual gap to the paper.
 
-### Step 3 — Full proteome run (requires ~5 GB download)
+### Step 3 — Full proteome run (H. sapiens v4)
 
-Download the *H. sapiens* AlphaFold-DB v4 tarball from
-[https://alphafold.ebi.ac.uk/download](https://alphafold.ebi.ac.uk/download) into `data/hsapiens/`, then:
+On first run, `run_full_proteome.py` downloads the *H. sapiens* AlphaFold-DB
+v4 tarball (`UP000005640_9606_HUMAN_v4.tar`, ~5 GB) into `data/hsapiens/`
+(resumable if interrupted), then streams it. The two follow-up scripts reuse
+that same local tarball, so run them in order:
 
 ```bash
 python src/run_full_proteome.py    # writes data/results/proteome_full.parquet
@@ -174,7 +176,35 @@ python src/run_arity.py            # writes data/results/proteome_full_arity.par
 python src/run_tp_ablation.py      # writes data/results/proteome_full_tp_ablation.parquet
 ```
 
-Each run takes about 30 s on 6 worker processes against a local tarball.
+After the one-time download, each pass takes about 30 s on 6 worker processes.
+
+### Step 4 — v6 replication and cross-organism extension
+
+These reproduce the generalisation results in the discussion (Section VI of
+`report/main.pdf`). Each runner auto-downloads its AlphaFold-DB **v6** tarball
+into `data/<organism>/` (resumable) and writes the parquets that
+`compare_organisms.py` consumes:
+
+```bash
+# H. sapiens v6 (~5 GB tarball): main stats, then the matching arity pass
+python src/run_v6_proteome.py
+python -c "import sys; sys.path.insert(0, 'src'); import run_arity; \
+  run_arity.run(tar_path='data/hsapiens/UP000005640_9606_HUMAN_v6.tar', \
+                out_path='data/results/proteome_v6_arity.parquet')"
+
+# Mouse / rat / yeast v6 (each writes full + tp_ablation + arity parquets)
+python src/run_organism.py MOUSE --version v6
+python src/run_organism.py RAT   --version v6
+python src/run_organism.py YEAST --version v6
+
+# Cross-organism comparison table + Pearson-r figure
+python src/compare_organisms.py    # writes data/results/cross_organism_pearson.png
+```
+
+The explicit `python -c` for the v6 arity pass is needed because `run_arity.py`
+defaults to the v4 tarball and has no command-line override; the helper calls
+its `run()` entry point directly. `compare_organisms.py` uses whichever
+organism parquets are present, so you can run a subset.
 
 ### Notebooks
 
