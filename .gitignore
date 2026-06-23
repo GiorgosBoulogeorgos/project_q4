@@ -39,9 +39,8 @@ report/refs.bib
 report/sections/
 report/figures/
 
-# --- slides ---
-slides/slides.pptx
-slides/slides.tex
+# --- slides (kept local only, not tracked in the repo) ---
+slides/
 
 # --- docs ---
 docs/hp_investigation.md

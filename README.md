@@ -43,7 +43,7 @@ H. sapiens proteome (AlphaFold-DB v4, 23,391 fragments):
 | Q1×Q4 arity centroid of candidate set | — | **(8, 15)** | (7, 15) | (7, 15) |
 | Q1×Q4 enrichment at centroid bin | — | **10.88×** (*p* = 2.64×10⁻³) | 5.92× (*p* = 1.61×10⁻³) | 5.92× |
 
-Prototype proteins (Figure 1 of the paper, integer pLDDT in all three columns of our pipeline):
+Prototype proteins (Figure 3 of the paper, integer pLDDT in all three columns of our pipeline):
 
 | Protein | Class | Paper *H*<sub>p</sub> | Our *H*<sub>p</sub> | Δ |
 |---|---|---|---|---|
@@ -78,7 +78,6 @@ tests/                 – pytest unit tests for every algorithm module (57 test
 notebooks/             – seven Jupyter notebooks (walkthrough → proteome figures,
                          incl. per-organism copies of notebook 04)
 report/                – LaTeX source (IEEEtran, gitignored) + compiled PDF (tracked)
-slides/                – Beamer LaTeX source + PDF + PPTX export
 data/
   prototypes/          – three prototype PDB files (downloaded by download.py)
   hsapiens/            – AlphaFold-DB proteome tarballs (~5 GB each, not committed)
@@ -175,7 +174,7 @@ python src/run_arity.py            # writes data/results/proteome_full_arity.par
 python src/run_tp_ablation.py      # writes data/results/proteome_full_tp_ablation.parquet
 ```
 
-Each run takes about 30 s on 8 worker processes against a local tarball.
+Each run takes about 30 s on 6 worker processes against a local tarball.
 
 ### Notebooks
 
@@ -190,7 +189,7 @@ jupyter notebook notebooks/
 | ------------------------------------- | --------------------------------------------- |
 | `01_single_protein_walkthrough.ipynb` | Filtration step-by-step on one protein        |
 | `02_null_model.ipynb`                 | Random pLDDT baseline and Conjecture 1        |
-| `03_prototypes_figure3.ipynb`         | Reproduce Figure 1 (three prototype proteins) |
+| `03_prototypes_figure3.ipynb`         | Reproduce Figure 3 (three prototype proteins) |
 | `04_proteome_figures7_8.ipynb`        | Reproduce Figures 7 and 8 at proteome scale   |
 | `04_proteome_figures7_8_mouse.ipynb`  | Figures 7/8 for *M. musculus* (v6)            |
 | `04_proteome_figures7_8_rat.ipynb`    | Figures 7/8 for *R. norvegicus* (v6)          |
