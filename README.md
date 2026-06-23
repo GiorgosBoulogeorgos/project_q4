@@ -4,6 +4,8 @@ Course project for **Algorithms in Structural Bioinformatics** (Academic Year 20
 
 This repository reproduces **Q4** of Cazals & Sarti (2025) — pLDDT-based fragmentation analysis of AlphaFold reconstructions — at the scale of the complete *H. sapiens* proteome (23,391 AlphaFold-DB fragment files), and extends it with a **Q1 arity cross-correlation** analysis.
 
+**What this measures.** AlphaFold tags every residue with a confidence score (pLDDT, 0–100) — high in well-folded regions, low in disordered or flexible ones. Sweeping the residue chain in order of *decreasing* pLDDT and tracking how it breaks into connected high-confidence components (a path-graph filtration solved with Union-Find under the Elder Rule) yields a persistence diagram. From it we derive the **persistence entropy** *H*<sub>p</sub> (how fragmented the confidence profile is) and *f*⁺<sub>cp</sub> (the fraction of long-lived components); a second-layer count of **persistent local maxima** (PLM) of the connected-component curve *N*<sub>cc</sub>(pLDDT) counts the distinct confident stretches. Together these flag multi-domain and partially-disordered proteins — confident segments punctuated by low-confidence linkers — purely from the 1-D pLDDT signal.
+
 The path-graph filtration and persistence diagram (Union-Find with the Elder Rule) are implemented **from scratch** in Python. The only TDA library used is **GUDHI**, and only for the second-layer Persistent Local Maxima (PLM) computation on the *N*<sub>cc</sub> curve.
 
 **Supervisor:** Prof. I. Emiris · **Co-advisor:** P. Rigas
@@ -16,19 +18,6 @@ F. Cazals & A. Sarti (2025).
 *AlphaFold predictions on whole genomes at a glance: a coherent view on packing properties, pLDDT values, and disordered regions.*
 bioRxiv 2024.11.16.623929 v4.
 [https://doi.org/10.1101/2024.11.16.623929](https://doi.org/10.1101/2024.11.16.623929)
-
----
-
-## Pipeline defaults
-
-Two algorithmic choices distinguish our default pipeline from the most literal reading of the paper, both of them needed to reproduce the paper's null-model behaviour and qualitative findings:
-
-| Choice | Default | Flag | Rationale |
-|---|---|---|---|
-| **pLDDT discretisation** | round to integers in [0, 100] | `discretise=True` | AlphaFold itself reports per-residue confidence as an integer. The raw-float baseline matches the paper's null *H*<sub>p</sub> at *n* = 1,000 only by coincidence and drifts to ≈ 0.41 at *n* = 10,000 (paper: 0.47); integer pLDDT reproduces all three null *H*<sub>p</sub> values across the paper's three sample sizes. |
-| **Batched insertion** | residues at the same integer pLDDT level inserted together | `batched=True` | Matches the paper's statement that "pLDDT values come in batches". The persistence diagram is bit-for-bit identical to the sequential one-residue-per-step variant under the Elder Rule, but the *N*<sub>cc</sub> curve is piecewise constant within each plateau, which significantly reduces PLM counts and the Fig. 8 candidate count. |
-
-Both flags can be set to `False` on `build_pd_and_ncc(plddt, discretise=..., batched=...)` to access the raw-float and sequential baselines as ablations.
 
 ---
 
@@ -51,7 +40,33 @@ Prototype proteins (Figure 3 of the paper, integer pLDDT in all three columns of
 | A0A0G2L439 | Disordered | ≈ 0.27 | 0.433 | +0.16 |
 | Q9VQS4 | Mixed | ≈ 0.28 | 0.425 | +0.15 |
 
-The residual gap to the paper's per-protein and Fig. 8 numbers is attributed to dataset drift between the AlphaFold-DB v4 snapshot used by the paper authors and the v4 tarball currently distributed by EBI; see `report/main.pdf` Section VI for the full discussion (including a side-by-side *N*<sub>cc</sub> curve overlay, the proteome-wide PLM histogram, and the Fig. 8 candidate count bar chart). The paper's 86-candidate count sits squarely between our batched-default 43 and our sequential-ablation 164 (geometric mean √(43·164) ≈ 84).
+The residual gap to the paper's per-protein *H*<sub>p</sub> and Fig. 8 numbers is attributed to **two non-exclusive causes** that we cannot separate without the authors' original inputs: (1) **dataset drift** between the AlphaFold-DB v4 snapshot the paper authors used in 2024 and the v4 tarball EBI currently distributes (v4 has been periodically rebuilt as AlphaFold 2.3 received sequence-database refreshes); and (2) the paper's **undisclosed pLDDT pre-processing** — no single rounding width simultaneously reproduces the prototype *H*<sub>p</sub> values and the Fig. 8 candidate count, so we present integer pLDDT as our best-justified default rather than a claim to have recovered the paper's exact convention. With neither the authors' frozen snapshot nor their pre-processing code available, the two contributions cannot be disentangled. See `report/main.pdf` Section VI for the full discussion (including a side-by-side *N*<sub>cc</sub> curve overlay, the proteome-wide PLM histogram, and the Fig. 8 candidate count bar chart). The paper's 86-candidate count sits squarely between our batched-default 43 and our sequential-ablation 164 (geometric mean √(43·164) ≈ 84).
+
+### Cross-organism generalisation
+
+Re-running the **identical** integer-pLDDT, batched pipeline on three further eukaryotic reference proteomes (AlphaFold-DB v6) shows the *f*⁺<sub>cp</sub>–*H*<sub>p</sub> correlation is effectively constant across mammals and only modestly lower on the much smaller yeast proteome:
+
+| Organism | Fragments | Pearson *r* | Fig. 8 candidates |
+|---|---|---|---|
+| *H. sapiens* | 23,586 | 0.850 | 43 |
+| *M. musculus* | 21,452 | 0.862 | 37 |
+| *R. norvegicus* | 22,152 | 0.854 | 38 |
+| *S. cerevisiae* | 6,055 | 0.816 | 11 |
+
+(All v6; the *H. sapiens* row here is the v6 counterpart of the *r* = 0.849 v4 figure above.) The robust cross-organism signal is the *f*⁺<sub>cp</sub>–*H*<sub>p</sub> correlation itself — the fragmentation phenomenon reads as broadly universal across the vertebrate and fungal proteomes tested, with strength modulated by each organism's intrinsic disorder content. See `report/main.pdf` Section VI.
+
+---
+
+## Pipeline defaults
+
+Two algorithmic choices distinguish our default pipeline from the most literal reading of the paper, both of them needed to reproduce the paper's null-model behaviour and qualitative findings:
+
+| Choice | Default | Flag | Rationale |
+|---|---|---|---|
+| **pLDDT discretisation** | round to integers in [0, 100] | `discretise=True` | AlphaFold itself reports per-residue confidence as an integer. The raw-float baseline matches the paper's null *H*<sub>p</sub> at *n* = 1,000 only by coincidence and drifts to ≈ 0.41 at *n* = 10,000 (paper: 0.47); integer pLDDT reproduces all three null *H*<sub>p</sub> values across the paper's three sample sizes. |
+| **Batched insertion** | residues at the same integer pLDDT level inserted together | `batched=True` | Matches the paper's statement that "pLDDT values come in batches". The persistence diagram is bit-for-bit identical to the sequential one-residue-per-step variant under the Elder Rule, but the *N*<sub>cc</sub> curve is piecewise constant within each plateau, which significantly reduces PLM counts and the Fig. 8 candidate count. |
+
+Both flags can be set to `False` on `build_pd_and_ncc(plddt, discretise=..., batched=...)` to access the raw-float and sequential baselines as ablations.
 
 ---
 
