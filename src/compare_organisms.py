@@ -30,7 +30,8 @@ import pandas as pd
 from scipy.stats import fisher_exact, pearsonr
 
 _ROOT    = Path(__file__).resolve().parent.parent
-_RESULTS = _ROOT / "data" / "results"
+_RESULTS = _ROOT / "data" / "results"          # input parquets
+_FIG_DIR = _ROOT / "results" / "figures"       # report figures (report/figures -> here)
 
 # label → (full parquet, arity parquet). All v6, so arity merges cleanly on
 # (uniprot_id, fragment) within each organism.
@@ -163,6 +164,7 @@ def plot_pearson(rows: list[dict], out: Path) -> None:
     for i, v in enumerate(vals):
         ax.text(i, v + 0.005, f"{v:.3f}", ha="center", va="bottom", fontsize=8)
     fig.tight_layout()
+    out.parent.mkdir(parents=True, exist_ok=True)
     for ext in ("png", "pdf"):
         fig.savefig(out.with_suffix(f".{ext}"), dpi=150)
     plt.close(fig)
@@ -175,4 +177,4 @@ if __name__ == "__main__":
     if not rows:
         raise SystemExit("No organism parquets found under data/results/.")
     print_table(rows)
-    plot_pearson(rows, _RESULTS / "cross_organism_pearson")
+    plot_pearson(rows, _FIG_DIR / "cross_organism_pearson")
