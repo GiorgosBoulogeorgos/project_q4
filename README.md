@@ -12,12 +12,17 @@ The path-graph filtration and persistence diagram (Union-Find with the Elder Rul
 
 ---
 
-## Paper reference
+## Paper references
 
-F. Cazals & A. Sarti (2025).
+F. Cazals & E. Sarti (2025).
 *AlphaFold predictions on whole genomes at a glance: a coherent view on packing properties, pLDDT values, and disordered regions.*
-bioRxiv 2024.11.16.623929 v4.
-[https://doi.org/10.1101/2024.11.16.623929](https://doi.org/10.1101/2024.11.16.623929)
+bioRxiv 2024.11.16.623929 **v5** (posted April 10, 2025) — primary reference.
+[https://www.biorxiv.org/content/10.1101/2024.11.16.623929v5](https://www.biorxiv.org/content/10.1101/2024.11.16.623929v5)
+
+F. Cazals & E. Sarti (2025).
+*AlphaFold predictions on whole genomes at a glance.*
+bioRxiv 2024.11.16.623929 **v4** (posted January 3, 2025) — earlier version, consulted for the null model and Example 1.
+[https://www.biorxiv.org/content/10.1101/2024.11.16.623929v4](https://www.biorxiv.org/content/10.1101/2024.11.16.623929v4)
 
 ---
 
