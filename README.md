@@ -109,7 +109,10 @@ notebooks/             – seven Jupyter notebooks (walkthrough → proteome fig
 report/                – LaTeX source (IEEEtran, gitignored) + compiled PDF (tracked)
 data/
   prototypes/          – prototype PDB files for the 3 proteins (bundled, ~1.2 MB)
-  hsapiens/            – AlphaFold-DB proteome tarballs (~5 GB each, not committed)
+  hsapiens/            – H. sapiens AlphaFold-DB proteome tarball (~5 GB, not committed)
+  <organism>/          – per-organism v6 tarballs created on demand by run_organism.py
+                          (mouse, rat, yeast, danre, arath, caeel, plaf7, ecoli,
+                          myctu, metja, pseae, drome; not committed)
   results/             – parquet files produced by the pipeline
 ```
 
@@ -275,6 +278,11 @@ jupyter notebook notebooks/
 | `04_proteome_figures7_8_rat.ipynb`    | Figures 7/8 for *R. norvegicus* (v6)          |
 | `04_proteome_figures7_8_yeast.ipynb`  | Figures 7/8 for *S. cerevisiae* (v6)          |
 
+The notebooks cover the original analysis and the first three model organisms.
+The full 13-organism cross-organism extension (zebrafish, *Arabidopsis*,
+*C. elegans*, *P. falciparum*, the three bacteria, and the archaeon) is driven
+entirely from the command line via `src/run_organism.py` and
+`src/compare_organisms.py` (Step 4 above), not notebooks.
 
 ---
 
