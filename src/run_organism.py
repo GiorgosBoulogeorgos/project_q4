@@ -20,7 +20,9 @@ Usage
     python src/run_organism.py MOUSE [--version v6] [--workers 6] [--t-p 0.025]
     python src/run_organism.py YEAST --tar data/yeast/UP000002311_559292_YEAST_v6.tar
 
-Supported species codes: MOUSE, RAT, YEAST (and HUMAN, for completeness).
+Supported species codes: MOUSE, RAT, YEAST, PSEAE, DROME (and HUMAN, for
+completeness). PSEAE is P. aeruginosa PAO1, a bacterial out-of-clade probe;
+DROME is D. melanogaster, a non-mammalian (invertebrate) animal probe.
 """
 
 from __future__ import annotations
@@ -53,6 +55,8 @@ _DATA_DIR = {
     "MOUSE": "mouse",
     "RAT":   "rat",
     "YEAST": "yeast",
+    "PSEAE": "pseae",   # P. aeruginosa PAO1 — bacterial generalisation probe
+    "DROME": "drome",   # D. melanogaster — invertebrate (non-mammalian animal) probe
 }
 
 
@@ -160,7 +164,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Run the full Q4 pipeline for an AlphaFold-DB model organism."
     )
-    parser.add_argument("species", help="MOUSE | RAT | YEAST | HUMAN")
+    parser.add_argument("species",
+                        help="MOUSE | RAT | YEAST | PSEAE | DROME | HUMAN")
     parser.add_argument("--version", default="v6",
                         help="AlphaFold-DB version (default v6)")
     parser.add_argument("--workers", type=int,   default=6)

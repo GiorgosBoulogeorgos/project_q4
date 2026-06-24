@@ -49,16 +49,18 @@ The residual gap to the paper's per-protein *H*<sub>p</sub> and Fig. 8 numbers i
 
 ### Cross-organism generalisation
 
-Re-running the **identical** integer-pLDDT, batched pipeline on three further eukaryotic reference proteomes (AlphaFold-DB v6) shows the *f*⁺<sub>cp</sub>–*H*<sub>p</sub> correlation is effectively constant across mammals and only modestly lower on the much smaller yeast proteome:
+Re-running the **identical** integer-pLDDT, batched pipeline on five further reference proteomes (AlphaFold-DB v6) — spanning the vertebrate–invertebrate split (*M. musculus*, *R. norvegicus*, *D. melanogaster*) and the eukaryote–prokaryote boundary (*S. cerevisiae*, and the bacterium *P. aeruginosa* as an out-of-clade test) — shows the *f*⁺<sub>cp</sub>–*H*<sub>p</sub> correlation stays strong throughout (0.80–0.86):
 
 | Organism | Fragments | Pearson *r* | Fig. 8 candidates |
 |---|---|---|---|
 | *H. sapiens* | 23,586 | 0.850 | 43 |
 | *M. musculus* | 21,452 | 0.862 | 37 |
 | *R. norvegicus* | 22,152 | 0.854 | 38 |
+| *D. melanogaster* (invertebrate) | 13,461 | 0.822 | 26 |
 | *S. cerevisiae* | 6,055 | 0.816 | 11 |
+| *P. aeruginosa* (bacterium) | 5,555 | 0.798 | 4 |
 
-(All v6; the *H. sapiens* row here is the v6 counterpart of the *r* = 0.849 v4 figure above.) The robust cross-organism signal is the *f*⁺<sub>cp</sub>–*H*<sub>p</sub> correlation itself — the fragmentation phenomenon reads as broadly universal across the vertebrate and fungal proteomes tested, with strength modulated by each organism's intrinsic disorder content. See `report/main.pdf` Section VI.
+(All v6; the *H. sapiens* row here is the v6 counterpart of the *r* = 0.849 v4 figure above.) The evidence reads in **two layers**. The fragmentation **phenomenon** — the *level* of the statistics — is essentially identical across all five eukaryotes (median *f*⁺<sub>cp</sub> ≈ 0.19, median *H*<sub>p</sub> ≈ 0.31, ~92 % of proteins above *H*<sub>p</sub> ≥ 0.25); only the bacterium is structurally flatter (median *f*⁺<sub>cp</sub> 0.153, *H*<sub>p</sub> 0.283), so the signal is universal across the animal (vertebrate + invertebrate), fungal, and bacterial proteomes. The **strength** of the correlation varies more (0.80–0.86), and here *D. melanogaster* is the key case: with mammal-like fragmentation but a lower *r* (0.822, sitting with the smaller eukaryotes), it — together with yeast — shows the spread is **not** a disorder-content effect. What does drive it is unresolved at six organisms (proteome size is the leading but unconfirmed candidate: Pearson(*N*, *r*) ≈ 0.94 but on only six points, Spearman 0.77 *p* = 0.07, and the trend reverses within the mammals). The bacterium's Fig. 8 set (4 proteins) is too small for the arity cross-correlation test. See `report/main.pdf` Section VI.
 
 ---
 
@@ -91,7 +93,7 @@ src/
   run_v6_proteome.py   – same pipeline against the v6 tarball
   run_tp_ablation.py   – three-threshold PLM ablation at t_p ∈ {0.020, 0.025, 0.030}
   run_arity.py         – arity signatures proteome-wide
-  run_organism.py      – full pipeline for any model organism (mouse/rat/yeast)
+  run_organism.py      – full pipeline for any model organism (mouse/rat/yeast/pseae/drome)
   compare_organisms.py – cross-organism comparison table + Pearson-r figure
   plots.py             – figure7 / figure8_scatter / figure8_panels helpers
 tests/                 – pytest unit tests for every algorithm module (57 tests)
@@ -216,6 +218,12 @@ python -c "import sys; sys.path.insert(0, 'src'); import run_arity; \
 python src/run_organism.py MOUSE --version v6
 python src/run_organism.py RAT   --version v6
 python src/run_organism.py YEAST --version v6
+
+# P. aeruginosa — bacterial out-of-clade probe (~640 MB v6 tarball, ~5.5k proteins)
+python src/run_organism.py PSEAE --version v6
+
+# D. melanogaster — invertebrate (non-mammalian animal) probe (~2.3 GB v6 tarball, ~13.5k proteins)
+python src/run_organism.py DROME --version v6
 
 # Cross-organism comparison table + Pearson-r figure
 python src/compare_organisms.py    # writes data/results/cross_organism_pearson.png

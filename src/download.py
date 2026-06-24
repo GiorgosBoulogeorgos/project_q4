@@ -63,6 +63,8 @@ _PROTEOME_IDS: dict[str, str] = {
     "MOUSE": "UP000000589_10090_MOUSE",
     "RAT":   "UP000002494_10116_RAT",
     "YEAST": "UP000002311_559292_YEAST",
+    "PSEAE": "UP000002438_208964_PSEAE",   # P. aeruginosa PAO1 — bacterial probe
+    "DROME": "UP000000803_7227_DROME",     # D. melanogaster — invertebrate metazoan
 }
 
 # ---------------------------------------------------------------------------

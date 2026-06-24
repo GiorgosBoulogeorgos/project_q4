@@ -42,8 +42,12 @@ _ORGANISMS: dict[str, tuple[Path, Path]] = {
                       _RESULTS / "proteome_mouse_v6_arity.parquet"),
     "R. norvegicus": (_RESULTS / "proteome_rat_v6_full.parquet",
                       _RESULTS / "proteome_rat_v6_arity.parquet"),
+    "D. melanogaster": (_RESULTS / "proteome_drome_v6_full.parquet",
+                        _RESULTS / "proteome_drome_v6_arity.parquet"),
     "S. cerevisiae": (_RESULTS / "proteome_yeast_v6_full.parquet",
                       _RESULTS / "proteome_yeast_v6_arity.parquet"),
+    "P. aeruginosa": (_RESULTS / "proteome_pseae_v6_full.parquet",
+                      _RESULTS / "proteome_pseae_v6_arity.parquet"),
 }
 
 _PAPER_R    = 0.97   # Cazals & Sarti, H. sapiens (Fig. 7)
@@ -151,7 +155,7 @@ def plot_pearson(rows: list[dict], out: Path) -> None:
     vals   = [r["r"] for r in rows]
     human  = next((r["r"] for r in rows if r["organism"] == "H. sapiens"), None)
 
-    fig, ax = plt.subplots(figsize=(6, 3.5))
+    fig, ax = plt.subplots(figsize=(6.6, 3.6))
     ax.bar(labels, vals, color="#4C72B0")
     if human is not None:
         ax.axhline(human, ls="--", c="#444",
@@ -161,6 +165,11 @@ def plot_pearson(rows: list[dict], out: Path) -> None:
     ax.set_ylabel(r"Pearson $r(f^+_{cp}, H_p)$")
     ax.set_title("Cross-organism correlation (AlphaFold-DB v6)")
     ax.legend(fontsize=8, loc="upper right")
+    # italicise species names and rotate so 6 labels don't collide
+    # (build mathtext outside the f-string: py3.9 forbids backslashes in f-strings)
+    italic = [r"$\it{" + l.replace(" ", r"\ ") + "}$" for l in labels]
+    ax.set_xticks(range(len(labels)))
+    ax.set_xticklabels(italic, rotation=20, ha="right", fontsize=8)
     for i, v in enumerate(vals):
         ax.text(i, v + 0.005, f"{v:.3f}", ha="center", va="bottom", fontsize=8)
     fig.tight_layout()
