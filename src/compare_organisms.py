@@ -257,15 +257,21 @@ def plot_r_vs_size(rows: list[dict], out: Path) -> None:
         ax.annotate(f"{g}. {sp}", (x, y), fontsize=7,
                     xytext=(4, 3), textcoords="offset points")
 
-    # overall trend across all organisms (descriptive, not a claim)
+    # overall trend across all organisms (descriptive, not a claim).
+    # Stats go in an in-axes box rather than the title, which otherwise
+    # overruns the figure width and gets clipped.
     pear, _ = pearsonr(xs, ys)
     spear, sp_p = spearmanr(xs, ys)
+    ptxt = "p < 0.001" if sp_p < 0.001 else f"p = {sp_p:.3f}"
     ax.set_xlabel(r"$\log_{10}$(proteome size, #fragments)")
     ax.set_ylabel(r"Pearson $r(f^+_{cp}, H_p)$")
-    ax.set_title(
-        f"Correlation strength vs proteome size  "
-        f"(Pearson {pear:.2f}, Spearman {spear:.2f}, p={sp_p:.2f}, "
-        f"n={len(rows)})")
+    ax.set_title("Correlation strength vs. proteome size", fontsize=12)
+    ax.text(0.02, 0.03,
+            f"Spearman $r$ = {spear:.2f}, {ptxt}\n"
+            f"Pearson = {pear:.2f}   ($n$ = {len(rows)})",
+            transform=ax.transAxes, fontsize=8, va="bottom", ha="left",
+            bbox=dict(boxstyle="round,pad=0.3", fc="white", ec="0.7",
+                      alpha=0.9))
     ax.legend(fontsize=7, loc="lower right", ncol=2, framealpha=0.9)
     ax.grid(True, ls=":", alpha=0.4)
     fig.tight_layout()
