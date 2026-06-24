@@ -233,9 +233,11 @@ python src/run_organism.py PSEAE --version v6
 python src/run_organism.py DROME --version v6
 
 # Size×clade confound-breakers spanning all three domains of life. Tarballs are
-# large; with limited disk, delete each after its run (parquets are <1 MB):
+# large; with limited disk, delete each after its run (parquets are <1 MB).
+# The lowercasing keeps this portable across bash and zsh:
 #   for SP in DANRE ARATH CAEEL PLAF7 ECOLI MYCTU METJA; do
-#     python src/run_organism.py $SP --version v6 && rm data/${SP:l}/*.tar
+#     python src/run_organism.py $SP --version v6 && \
+#       rm data/$(echo "$SP" | tr 'A-Z' 'a-z')/*.tar
 #   done
 python src/run_organism.py DANRE --version v6   # zebrafish — vertebrate (~5.0 GB)
 python src/run_organism.py ARATH --version v6   # A. thaliana — plant (~3.9 GB)
