@@ -49,18 +49,25 @@ The residual gap to the paper's per-protein *H*<sub>p</sub> and Fig. 8 numbers i
 
 ### Cross-organism generalisation
 
-Re-running the **identical** integer-pLDDT, batched pipeline on five further reference proteomes (AlphaFold-DB v6) — spanning the vertebrate–invertebrate split (*M. musculus*, *R. norvegicus*, *D. melanogaster*) and the eukaryote–prokaryote boundary (*S. cerevisiae*, and the bacterium *P. aeruginosa* as an out-of-clade test) — shows the *f*⁺<sub>cp</sub>–*H*<sub>p</sub> correlation stays strong throughout (0.80–0.86):
+Re-running the **identical** integer-pLDDT, batched pipeline on **twelve** further reference proteomes (AlphaFold-DB v6) spanning **all three domains of life** — chosen to break the size–clade confound by pairing large non-mammalian eukaryotes against small proteomes from every clade — gives the *f*⁺<sub>cp</sub>–*H*<sub>p</sub> correlation across 13 organisms (eukaryotes first, prokaryotes below):
 
-| Organism | Fragments | Pearson *r* | Fig. 8 candidates |
-|---|---|---|---|
-| *H. sapiens* | 23,586 | 0.850 | 43 |
-| *M. musculus* | 21,452 | 0.862 | 37 |
-| *R. norvegicus* | 22,152 | 0.854 | 38 |
-| *D. melanogaster* (invertebrate) | 13,461 | 0.822 | 26 |
-| *S. cerevisiae* | 6,055 | 0.816 | 11 |
-| *P. aeruginosa* (bacterium) | 5,555 | 0.798 | 4 |
+| Organism | Fragments | Pearson *r* | median *H*<sub>p</sub> | Fig. 8 candidates |
+|---|---|---|---|---|
+| *H. sapiens* | 23,586 | 0.850 | 0.317 | 43 |
+| *M. musculus* | 21,452 | 0.862 | 0.313 | 37 |
+| *R. norvegicus* | 22,152 | 0.854 | 0.321 | 38 |
+| *D. rerio* (vertebrate) | 26,290 | 0.876 | 0.314 | 66 |
+| *D. melanogaster* (invertebrate) | 13,461 | 0.822 | 0.320 | 26 |
+| *C. elegans* (invertebrate) | 19,700 | 0.846 | 0.322 | 42 |
+| *A. thaliana* (plant) | 27,402 | 0.864 | 0.316 | 65 |
+| *S. cerevisiae* (fungus) | 6,055 | 0.816 | 0.311 | 11 |
+| *P. falciparum* (protist) | 5,168 | 0.764 | 0.332 | 28 |
+| *P. aeruginosa* (bacterium) | 5,555 | 0.798 | 0.283 | 4 |
+| *E. coli* (bacterium) | 4,370 | 0.745 | 0.286 | 1 |
+| *M. tuberculosis* (bacterium) | 3,991 | 0.842 | 0.288 | 4 |
+| *M. jannaschii* (archaeon) | 1,773 | 0.786 | 0.283 | 2 |
 
-(All v6; the *H. sapiens* row here is the v6 counterpart of the *r* = 0.849 v4 figure above.) The evidence reads in **two layers**. The fragmentation **phenomenon** — the *level* of the statistics — is essentially identical across all five eukaryotes (median *f*⁺<sub>cp</sub> ≈ 0.19, median *H*<sub>p</sub> ≈ 0.31, ~92 % of proteins above *H*<sub>p</sub> ≥ 0.25); only the bacterium is structurally flatter (median *f*⁺<sub>cp</sub> 0.153, *H*<sub>p</sub> 0.283), so the signal is universal across the animal (vertebrate + invertebrate), fungal, and bacterial proteomes. The **strength** of the correlation varies more (0.80–0.86), and here *D. melanogaster* is the key case: with mammal-like fragmentation but a lower *r* (0.822, sitting with the smaller eukaryotes), it — together with yeast — shows the spread is **not** a disorder-content effect. What does drive it is unresolved at six organisms (proteome size is the leading but unconfirmed candidate: Pearson(*N*, *r*) ≈ 0.94 but on only six points, Spearman 0.77 *p* = 0.07, and the trend reverses within the mammals). The bacterium's Fig. 8 set (4 proteins) is too small for the arity cross-correlation test. See `report/main.pdf` Section VI.
+(All v6; the *H. sapiens* row here is the v6 counterpart of the *r* = 0.849 v4 figure above.) The evidence reads in **two layers**. The fragmentation **phenomenon** — the *level* of the statistics — is essentially identical across all **nine eukaryotes** (median *f*⁺<sub>cp</sub> 0.194 ± 0.007, median *H*<sub>p</sub> 0.318 ± 0.006; the protist is the most disorder-rich of all); the **four prokaryotes** are structurally flatter (median *f*⁺<sub>cp</sub> 0.153 ± 0.004, *H*<sub>p</sub> 0.285 ± 0.002) but still show the coupling, so the signal is universal across the eukaryotic domain and attenuated, never absent, beyond it. The **strength** of the correlation (*r* = 0.745–0.876) is **governed by proteome size**: with the size–clade confound broken, per-organism *r* rises with fragment count at **Spearman 0.86 (*p* = 0.001, n = 13)** independently of clade — the three large non-mammalian eukaryotes (zebrafish, *Arabidopsis*, *C. elegans*) average *r* = 0.862, identical to the three mammals' 0.856. **Intrinsic-disorder content is excluded**: *r* is uncorrelated with median *H*<sub>p</sub> (Spearman 0.31, *p* = 0.31) and the most disordered proteome (*P. falciparum*) has the second-lowest *r* of all 13. *M. tuberculosis* (small but *r* = 0.84) is the one outlier; dropping it lifts the size association to Spearman 0.94. The arity cross-correlation now replicates **independently significantly** in zebrafish (11.2×, *p* = 2.5×10⁻³) and *C. elegans* (9.7×, *p* = 1.8×10⁻²); the four prokaryotes yield too few candidates (1–4) to test. See `report/main.pdf` Section VI and `results/figures/cross_organism_r_vs_size.png`.
 
 ---
 
@@ -93,8 +100,8 @@ src/
   run_v6_proteome.py   – same pipeline against the v6 tarball
   run_tp_ablation.py   – three-threshold PLM ablation at t_p ∈ {0.020, 0.025, 0.030}
   run_arity.py         – arity signatures proteome-wide
-  run_organism.py      – full pipeline for any model organism (mouse/rat/yeast/pseae/drome)
-  compare_organisms.py – cross-organism comparison table + Pearson-r figure
+  run_organism.py      – full pipeline for any model organism (13 supported, all 3 domains of life)
+  compare_organisms.py – cross-organism comparison table + Pearson-r bar chart + r-vs-size scatter
   plots.py             – figure7 / figure8_scatter / figure8_panels helpers
 tests/                 – pytest unit tests for every algorithm module (57 tests)
 notebooks/             – seven Jupyter notebooks (walkthrough → proteome figures,
@@ -225,8 +232,21 @@ python src/run_organism.py PSEAE --version v6
 # D. melanogaster — invertebrate (non-mammalian animal) probe (~2.3 GB v6 tarball, ~13.5k proteins)
 python src/run_organism.py DROME --version v6
 
-# Cross-organism comparison table + Pearson-r figure
-python src/compare_organisms.py    # writes data/results/cross_organism_pearson.png
+# Size×clade confound-breakers spanning all three domains of life. Tarballs are
+# large; with limited disk, delete each after its run (parquets are <1 MB):
+#   for SP in DANRE ARATH CAEEL PLAF7 ECOLI MYCTU METJA; do
+#     python src/run_organism.py $SP --version v6 && rm data/${SP:l}/*.tar
+#   done
+python src/run_organism.py DANRE --version v6   # zebrafish — vertebrate (~5.0 GB)
+python src/run_organism.py ARATH --version v6   # A. thaliana — plant (~3.9 GB)
+python src/run_organism.py CAEEL --version v6   # C. elegans — invertebrate (~2.8 GB)
+python src/run_organism.py PLAF7 --version v6   # P. falciparum — protist (~1.2 GB)
+python src/run_organism.py ECOLI --version v6   # E. coli — bacterium (~0.5 GB)
+python src/run_organism.py MYCTU --version v6   # M. tuberculosis — bacterium (~0.4 GB)
+python src/run_organism.py METJA --version v6   # M. jannaschii — archaeon (~0.2 GB)
+
+# Cross-organism comparison table + figures (bar chart + r-vs-log10(N) scatter)
+python src/compare_organisms.py    # writes results/figures/cross_organism_{pearson,r_vs_size}.png
 ```
 
 The explicit `python -c` for the v6 arity pass is needed because `run_arity.py`

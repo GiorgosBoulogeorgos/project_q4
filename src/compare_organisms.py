@@ -34,20 +34,51 @@ _RESULTS = _ROOT / "data" / "results"          # input parquets
 _FIG_DIR = _ROOT / "results" / "figures"       # report figures (report/figures -> here)
 
 # label → (full parquet, arity parquet). All v6, so arity merges cleanly on
-# (uniprot_id, fragment) within each organism.
+# (uniprot_id, fragment) within each organism. Ordered by clade so the table
+# and figure read top-down: mammals → non-mammalian vertebrate → invertebrates
+# → plant → fungus → protist → bacteria → archaeon. Organisms whose parquets
+# are absent are skipped gracefully by summarise().
 _ORGANISMS: dict[str, tuple[Path, Path]] = {
-    "H. sapiens":    (_RESULTS / "proteome_v6_full.parquet",
-                      _RESULTS / "proteome_v6_arity.parquet"),
-    "M. musculus":   (_RESULTS / "proteome_mouse_v6_full.parquet",
-                      _RESULTS / "proteome_mouse_v6_arity.parquet"),
-    "R. norvegicus": (_RESULTS / "proteome_rat_v6_full.parquet",
-                      _RESULTS / "proteome_rat_v6_arity.parquet"),
+    "H. sapiens":      (_RESULTS / "proteome_v6_full.parquet",
+                        _RESULTS / "proteome_v6_arity.parquet"),
+    "M. musculus":     (_RESULTS / "proteome_mouse_v6_full.parquet",
+                        _RESULTS / "proteome_mouse_v6_arity.parquet"),
+    "R. norvegicus":   (_RESULTS / "proteome_rat_v6_full.parquet",
+                        _RESULTS / "proteome_rat_v6_arity.parquet"),
+    "D. rerio":        (_RESULTS / "proteome_danre_v6_full.parquet",
+                        _RESULTS / "proteome_danre_v6_arity.parquet"),
     "D. melanogaster": (_RESULTS / "proteome_drome_v6_full.parquet",
                         _RESULTS / "proteome_drome_v6_arity.parquet"),
-    "S. cerevisiae": (_RESULTS / "proteome_yeast_v6_full.parquet",
-                      _RESULTS / "proteome_yeast_v6_arity.parquet"),
-    "P. aeruginosa": (_RESULTS / "proteome_pseae_v6_full.parquet",
-                      _RESULTS / "proteome_pseae_v6_arity.parquet"),
+    "C. elegans":      (_RESULTS / "proteome_caeel_v6_full.parquet",
+                        _RESULTS / "proteome_caeel_v6_arity.parquet"),
+    "A. thaliana":     (_RESULTS / "proteome_arath_v6_full.parquet",
+                        _RESULTS / "proteome_arath_v6_arity.parquet"),
+    "S. cerevisiae":   (_RESULTS / "proteome_yeast_v6_full.parquet",
+                        _RESULTS / "proteome_yeast_v6_arity.parquet"),
+    "P. falciparum":   (_RESULTS / "proteome_plaf7_v6_full.parquet",
+                        _RESULTS / "proteome_plaf7_v6_arity.parquet"),
+    "P. aeruginosa":   (_RESULTS / "proteome_pseae_v6_full.parquet",
+                        _RESULTS / "proteome_pseae_v6_arity.parquet"),
+    "E. coli":         (_RESULTS / "proteome_ecoli_v6_full.parquet",
+                        _RESULTS / "proteome_ecoli_v6_arity.parquet"),
+    "M. tuberculosis": (_RESULTS / "proteome_myctu_v6_full.parquet",
+                        _RESULTS / "proteome_myctu_v6_arity.parquet"),
+    "M. jannaschii":   (_RESULTS / "proteome_metja_v6_full.parquet",
+                        _RESULTS / "proteome_metja_v6_arity.parquet"),
+}
+
+# Clade tag per organism — drives the colour/marker grouping in the
+# r-vs-log10(N) scatter (the figure that disentangles size from clade).
+_CLADE: dict[str, str] = {
+    "H. sapiens": "Mammal", "M. musculus": "Mammal", "R. norvegicus": "Mammal",
+    "D. rerio": "Other vertebrate",
+    "D. melanogaster": "Invertebrate", "C. elegans": "Invertebrate",
+    "A. thaliana": "Plant",
+    "S. cerevisiae": "Fungus",
+    "P. falciparum": "Protist",
+    "P. aeruginosa": "Bacterium", "E. coli": "Bacterium",
+    "M. tuberculosis": "Bacterium",
+    "M. jannaschii": "Archaeon",
 }
 
 _PAPER_R    = 0.97   # Cazals & Sarti, H. sapiens (Fig. 7)
@@ -101,6 +132,7 @@ def summarise(label: str, full_path: Path, arity_path: Path) -> dict | None:
 
     row = {
         "organism":  label,
+        "clade":     _CLADE.get(label, "Other"),
         "n":         len(df),
         "r":         r,
         "med_fcp":   df["f_cp_plus"].median(),
@@ -180,6 +212,70 @@ def plot_pearson(rows: list[dict], out: Path) -> None:
     print(f"\n  Wrote {out.with_suffix('.png')} (+ .pdf)")
 
 
+def plot_r_vs_size(rows: list[dict], out: Path) -> None:
+    """
+    Scatter of per-organism Pearson r against log10(proteome size), coloured by
+    clade. This is the figure that disentangles the two confounded explanations
+    for why the f+_cp–H_p correlation strength varies: a size trend shows up as
+    a left-to-right slope, a clade effect as vertical separation between colours.
+    With both axes visible at once, a large non-mammal landing on the mammals'
+    r-level would favour size; landing with the small eukaryotes would favour
+    clade.
+    """
+    try:
+        import math
+
+        import matplotlib
+        matplotlib.use("Agg")
+        import matplotlib.pyplot as plt
+        from scipy.stats import pearsonr, spearmanr
+    except Exception as exc:                       # pragma: no cover
+        print(f"  [plot skipped] matplotlib unavailable: {exc}")
+        return
+
+    # stable colour per clade (tab10), in first-appearance order
+    clade_order: list[str] = []
+    for r in rows:
+        if r["clade"] not in clade_order:
+            clade_order.append(r["clade"])
+    cmap = plt.get_cmap("tab10")
+    colour = {c: cmap(i % 10) for i, c in enumerate(clade_order)}
+
+    fig, ax = plt.subplots(figsize=(7.2, 4.2))
+    xs = [math.log10(r["n"]) for r in rows]
+    ys = [r["r"] for r in rows]
+
+    for clade in clade_order:
+        idx = [i for i, r in enumerate(rows) if r["clade"] == clade]
+        ax.scatter([xs[i] for i in idx], [ys[i] for i in idx],
+                   s=70, color=colour[clade], label=clade,
+                   edgecolor="white", linewidth=0.8, zorder=3)
+
+    # annotate each point with the (abbreviated) organism name
+    for x, y, r in zip(xs, ys, rows):
+        g, sp = r["organism"].split(". ", 1)
+        ax.annotate(f"{g}. {sp}", (x, y), fontsize=7,
+                    xytext=(4, 3), textcoords="offset points")
+
+    # overall trend across all organisms (descriptive, not a claim)
+    pear, _ = pearsonr(xs, ys)
+    spear, sp_p = spearmanr(xs, ys)
+    ax.set_xlabel(r"$\log_{10}$(proteome size, #fragments)")
+    ax.set_ylabel(r"Pearson $r(f^+_{cp}, H_p)$")
+    ax.set_title(
+        f"Correlation strength vs proteome size  "
+        f"(Pearson {pear:.2f}, Spearman {spear:.2f}, p={sp_p:.2f}, "
+        f"n={len(rows)})")
+    ax.legend(fontsize=7, loc="lower right", ncol=2, framealpha=0.9)
+    ax.grid(True, ls=":", alpha=0.4)
+    fig.tight_layout()
+    out.parent.mkdir(parents=True, exist_ok=True)
+    for ext in ("png", "pdf"):
+        fig.savefig(out.with_suffix(f".{ext}"), dpi=150)
+    plt.close(fig)
+    print(f"  Wrote {out.with_suffix('.png')} (+ .pdf)")
+
+
 if __name__ == "__main__":
     rows = [r for r in (summarise(lbl, f, a)
                         for lbl, (f, a) in _ORGANISMS.items()) if r]
@@ -187,3 +283,4 @@ if __name__ == "__main__":
         raise SystemExit("No organism parquets found under data/results/.")
     print_table(rows)
     plot_pearson(rows, _FIG_DIR / "cross_organism_pearson")
+    plot_r_vs_size(rows, _FIG_DIR / "cross_organism_r_vs_size")

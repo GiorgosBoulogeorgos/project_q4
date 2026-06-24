@@ -20,9 +20,13 @@ Usage
     python src/run_organism.py MOUSE [--version v6] [--workers 6] [--t-p 0.025]
     python src/run_organism.py YEAST --tar data/yeast/UP000002311_559292_YEAST_v6.tar
 
-Supported species codes: MOUSE, RAT, YEAST, PSEAE, DROME (and HUMAN, for
-completeness). PSEAE is P. aeruginosa PAO1, a bacterial out-of-clade probe;
-DROME is D. melanogaster, a non-mammalian (invertebrate) animal probe.
+Supported species codes: MOUSE, RAT, YEAST, PSEAE, DROME, ARATH, DANRE,
+CAEEL, PLAF7, ECOLI, MYCTU, METJA (and HUMAN, for completeness). The latter
+seven were added to break the size×clade confound in the cross-organism panel
+(large non-mammal eukaryotes ARATH/DANRE; invertebrate CAEEL; small disorder-
+rich protist PLAF7; bacteria ECOLI/MYCTU; archaeon METJA). Because disk is
+near-full, their tarballs should be deleted right after a run completes
+(download → process → ``rm data/<dir>/*.tar``); only the <1 MB parquets persist.
 """
 
 from __future__ import annotations
@@ -57,6 +61,15 @@ _DATA_DIR = {
     "YEAST": "yeast",
     "PSEAE": "pseae",   # P. aeruginosa PAO1 — bacterial generalisation probe
     "DROME": "drome",   # D. melanogaster — invertebrate (non-mammalian animal) probe
+    # ── size×clade confound-breakers (2026-06-24); tarballs are deleted after
+    #    processing (download → process → rm) because disk is near-full. ───────
+    "ARATH": "arath",   # A. thaliana — plant (large non-animal eukaryote)
+    "DANRE": "danre",   # D. rerio (zebrafish) — large non-mammalian vertebrate
+    "CAEEL": "caeel",   # C. elegans — invertebrate (nematode)
+    "PLAF7": "plaf7",   # P. falciparum — protist (small, disorder-rich)
+    "ECOLI": "ecoli",   # E. coli K-12 — 2nd bacterium
+    "MYCTU": "myctu",   # M. tuberculosis — 3rd bacterium
+    "METJA": "metja",   # M. jannaschii — archaeon (3rd domain of life)
 }
 
 
@@ -164,8 +177,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Run the full Q4 pipeline for an AlphaFold-DB model organism."
     )
-    parser.add_argument("species",
-                        help="MOUSE | RAT | YEAST | PSEAE | DROME | HUMAN")
+    parser.add_argument(
+        "species",
+        help="MOUSE | RAT | YEAST | PSEAE | DROME | ARATH | DANRE | CAEEL | "
+             "PLAF7 | ECOLI | MYCTU | METJA | HUMAN")
     parser.add_argument("--version", default="v6",
                         help="AlphaFold-DB version (default v6)")
     parser.add_argument("--workers", type=int,   default=6)

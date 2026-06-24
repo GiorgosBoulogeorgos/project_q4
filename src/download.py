@@ -65,6 +65,14 @@ _PROTEOME_IDS: dict[str, str] = {
     "YEAST": "UP000002311_559292_YEAST",
     "PSEAE": "UP000002438_208964_PSEAE",   # P. aeruginosa PAO1 — bacterial probe
     "DROME": "UP000000803_7227_DROME",     # D. melanogaster — invertebrate metazoan
+    # ── size×clade confound-breakers (added 2026-06-24) ──────────────────────
+    "ARATH": "UP000006548_3702_ARATH",     # A. thaliana — plant (large non-animal eukaryote)
+    "DANRE": "UP000000437_7955_DANRE",     # D. rerio (zebrafish) — non-mammalian vertebrate
+    "CAEEL": "UP000001940_6239_CAEEL",     # C. elegans — invertebrate (nematode)
+    "PLAF7": "UP000001450_36329_PLAF7",    # P. falciparum — protist (small, disorder-rich)
+    "ECOLI": "UP000000625_83333_ECOLI",    # E. coli K-12 — 2nd bacterium
+    "MYCTU": "UP000001584_83332_MYCTU",    # M. tuberculosis — 3rd bacterium
+    "METJA": "UP000000805_243232_METJA",   # M. jannaschii — archaeon (3rd domain of life)
 }
 
 # ---------------------------------------------------------------------------
