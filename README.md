@@ -1,4 +1,4 @@
-# Q4 — pLDDT Fragmentation of AlphaFold Predictions at Proteome Scale
+# Q4 — pLDDT Fragmentation of AlphaFold Predictions: Proteome-Scale Reproduction, Arity Cross-Correlation, and Cross-Organism Extension
 
 Course project for **Algorithms in Structural Bioinformatics** (Academic Year 2025–2026).
 
